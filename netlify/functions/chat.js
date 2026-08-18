@@ -32,6 +32,7 @@ exports.handler = async function (event) {
     });
 
     const data = await groqResponse.json();
+    console.log("GROQ_STATUS:", groqResponse.status, "GROQ_BODY:", JSON.stringify(data));
 
     return {
       statusCode: 200,
@@ -46,4 +47,3 @@ exports.handler = async function (event) {
     };
   }
 };
-
