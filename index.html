@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Guru — Coding Sikhne Ka Blackboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Hind:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#1b3a2f;
+    --board-dark:#142e25;
+    --chalk:#f5f3e7;
+    --chalk-dim:#cdd6cc;
+    --yellow:#e8c547;
+    --coral:#d8737f;
+    --sage:#4a6b5c;
+    --wood:#6b4226;
+    --wood-dark:#4e3019;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Hind',sans-serif;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.03), transparent 60%),
+      var(--board);
+    color:var(--chalk);
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  /* chalk dust texture */
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    pointer-events:none;
+    background-image:
+      radial-gradient(rgba(245,243,231,0.035) 1px, transparent 1px),
+      radial-gradient(rgba(245,243,231,0.025) 1px, transparent 1px);
+    background-size:60px 60px, 37px 37px;
+    background-position:0 0, 15px 20px;
+    z-index:0;
+  }
+
+  header{
+    position:relative;
+    z-index:1;
+    padding:22px 20px 0;
+    text-align:center;
+    border-bottom:3px solid var(--wood-dark);
+  }
+  header h1{
+    font-family:'Baloo 2',cursive;
+    font-weight:800;
+    font-size:clamp(26px,5vw,38px);
+    margin:0 0 4px;
+    letter-spacing:0.5px;
+    text-shadow:0 0 18px rgba(245,243,231,0.15);
+  }
+  header .underline{
+    width:150px;height:6px;margin:6px auto 10px;
+    background:var(--yellow);
+    border-radius:6px;
+    opacity:0.85;
+    transform:rotate(-1deg);
+  }
+  header p{
+    font-size:14px;
+    color:var(--chalk-dim);
+    margin:0 0 16px;
+  }
+
+  /* chalk tray - language chips */
+  .tray{
+    position:relative;
+    z-index:1;
+    background:linear-gradient(180deg,var(--wood),var(--wood-dark));
+    border-top:2px solid #3a2312;
+    padding:12px 14px;
+    display:flex;
+    gap:9px;
+    overflow-x:auto;
+    scrollbar-width:thin;
+  }
+  .tray::-webkit-scrollbar{height:5px;}
+  .tray::-webkit-scrollbar-thumb{background:#3a2312;border-radius:4px;}
+  .chalk-chip{
+    flex:0 0 auto;
+    font-family:'Fira Code',monospace;
+    font-size:12.5px;
+    font-weight:500;
+    padding:8px 14px;
+    border-radius:14px 14px 14px 3px;
+    border:none;
+    cursor:pointer;
+    color:#1b3a2f;
+    box-shadow:0 2px 0 rgba(0,0,0,0.25), inset 0 -2px 4px rgba(0,0,0,0.08);
+    transition:transform 0.12s ease;
+    white-space:nowrap;
+  }
+  .chalk-chip:hover{transform:translateY(-2px);}
+  .chalk-chip:active{transform:translateY(0px);}
+  .c1{background:#f5f3e7;} .c2{background:#e8c547;}
+  .c3{background:#d8737f;color:#3a1015;} .c4{background:#8fb9a8;}
+  .c5{background:#a7c4e8;} .c6{background:#e8a75c;}
+
+  main{
+    flex:1;
+    position:relative;
+    z-index:1;
+    max-width:760px;
+    width:100%;
+    margin:0 auto;
+    padding:18px 16px 12px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    overflow-y:auto;
+  }
+
+  .msg{
+    max-width:88%;
+    padding:12px 15px;
+    line-height:1.55;
+    font-size:15px;
+    position:relative;
+    animation:appear 0.25s ease;
+  }
+  @keyframes appear{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .msg.user{
+    align-self:flex-end;
+    background:rgba(216,115,127,0.16);
+    border:1.5px dashed var(--coral);
+    border-radius:14px 14px 3px 14px;
+    color:var(--chalk);
+  }
+  .msg.ai{
+    align-self:flex-start;
+    background:rgba(245,243,231,0.05);
+    border-left:3px solid var(--yellow);
+    border-radius:3px 14px 14px 14px;
+    color:var(--chalk);
+  }
+  .msg.ai .label, .msg.user .label{
+    display:block;
+    font-family:'Baloo 2',cursive;
+    font-size:11.5px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    margin-bottom:5px;
+    opacity:0.7;
+  }
+  .msg pre{
+    background:var(--board-dark);
+    border:1px solid var(--sage);
+    border-radius:8px;
+    padding:12px;
+    overflow-x:auto;
+    margin:10px 0;
+  }
+  .msg code{
+    font-family:'Fira Code',monospace;
+    font-size:13px;
+    color:#e8c547;
+  }
+  .msg p code, .msg li code{
+    background:rgba(232,197,71,0.12);
+    padding:1px 5px;
+    border-radius:4px;
+    color:var(--yellow);
+  }
+  .msg p{margin:0 0 8px;}
+  .msg p:last-child{margin-bottom:0;}
+
+  .welcome{
+    text-align:center;
+    color:var(--chalk-dim);
+    font-size:14px;
+    padding:26px 10px;
+    border:2px dashed rgba(245,243,231,0.15);
+    border-radius:12px;
+    margin-top:8px;
+  }
+  .welcome b{color:var(--yellow);font-family:'Baloo 2',cursive;}
+
+  .typing{
+    align-self:flex-start;
+    display:flex;
+    gap:5px;
+    padding:14px 15px;
+  }
+  .typing span{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--chalk-dim);
+    animation:blink 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2){animation-delay:0.2s;}
+  .typing span:nth-child(3){animation-delay:0.4s;}
+  @keyframes blink{0%,80%,100%{opacity:0.25;}40%{opacity:1;}}
+
+  footer{
+    position:relative;
+    z-index:1;
+    background:linear-gradient(180deg,var(--wood),var(--wood-dark));
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+    display:flex;
+    gap:10px;
+    border-top:2px solid #3a2312;
+  }
+  #userInput{
+    flex:1;
+    background:var(--board-dark);
+    border:1.5px solid var(--sage);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--chalk);
+    font-family:'Hind',sans-serif;
+    font-size:15px;
+    resize:none;
+    outline:none;
+  }
+  #userInput:focus{border-color:var(--yellow);}
+  #userInput::placeholder{color:var(--chalk-dim);opacity:0.6;}
+  #sendBtn{
+    font-family:'Baloo 2',cursive;
+    font-weight:700;
+    background:var(--yellow);
+    color:#3a2312;
+    border:none;
+    border-radius:10px;
+    padding:0 20px;
+    cursor:pointer;
+    font-size:15px;
+    box-shadow:0 2px 0 #a37f1e;
+  }
+  #sendBtn:active{transform:translateY(1px);box-shadow:0 1px 0 #a37f1e;}
+  #sendBtn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  @media (prefers-reduced-motion: reduce){
+    .msg, .typing span{animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Code Guru 🖊️</h1>
+  <div class="underline"></div>
+  <p>Har coding language, ek dum simple bhasha mein, step-by-step</p>
+</header>
+
+<div class="tray" id="tray">
+  <button class="chalk-chip c1" data-lang="Python">🐍 Python</button>
+  <button class="chalk-chip c2" data-lang="Java">☕ Java</button>
+  <button class="chalk-chip c3" data-lang="C++">⚙️ C++</button>
+  <button class="chalk-chip c4" data-lang="JavaScript">🟨 JavaScript</button>
+  <button class="chalk-chip c5" data-lang="Kotlin">📱 Kotlin</button>
+  <button class="chalk-chip c6" data-lang="C">🔧 C</button>
+  <button class="chalk-chip c1" data-lang="HTML/CSS">🌐 HTML/CSS</button>
+  <button class="chalk-chip c2" data-lang="SQL">🗄️ SQL</button>
+</div>
+
+<main id="chat">
+  <div class="welcome" id="welcomeMsg">
+    Upar chalk tray se koi <b>language</b> chunein, ya neeche seedha apna sawaal type karein — jaise <i>"mujhe Python variables samjhao"</i> ya <i>"C++ mein loop kaise likhte hain"</i>.
+  </div>
+</main>
+
+<footer>
+  <textarea id="userInput" rows="1" placeholder="Apna sawaal yahan likhein... (jaise: Python mujhe shuru se sikhao)"></textarea>
+  <button id="sendBtn">Bhejein</button>
+</footer>
+
+<script>
+const chat = document.getElementById('chat');
+const input = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const welcomeMsg = document.getElementById('welcomeMsg');
+const tray = document.getElementById('tray');
+
+const SYSTEM_PROMPT = `Tum "Code Guru" ho — ek bahut hi dhairya wale (patient), pyaar se samjhaane wale coding teacher, jo bilkul beginner students ko coding sikhate ho.
+
+Rules:
+- Hamesha simple Hindi-English mix (Hinglish) mein samjhao, jaise ek dost ya ek acha teacher class mein bolta hai. Bhaari-bharkam English jargon se bacho, aur agar koi technical word use karo to turant uska matlab simple shabdon mein batao.
+- Har cheez STEP BY STEP samjhao — ek dum shuru se, chhote-chhote steps mein, ek concept complete hone ke baad hi agla concept do.
+- Duniya ki koi bhi coding language ho sakti hai — Python, Java, C, C++, JavaScript, Kotlin, Swift, Go, Rust, PHP, SQL, HTML/CSS, etc. Jo bhi student poochhe, usi language mein sikhao.
+- Chhote, practical code examples do (code ko \`\`\`language code blocks\`\`\` mein likho), aur har line ka kaam simple shabdon mein bolke samjhao.
+- Beginner-friendly analogies use karo taaki concept turant samajh aa jaaye (roz ki zindagi ki misaal do).
+- Har jawab ke end mein ek chhota sa practice sawaal ya "try karo" task do, taaki student practice kar sake.
+- Agar student ka sawaal unclear ho, to pyaar se ek chhota sa clarifying sawaal pooch lo.
+- Responses zyada lambe mat karo — ek baar mein ek concept, achhi tarah samjhao, overload mat karo.`;
+
+let messages = [];
+
+// Netlify Function ka path — same website ke andar hi hai, isliye poora URL nahi chahiye
+const WORKER_URL = "/.netlify/functions/chat";
+
+function scrollToBottom(){
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function escapeHtml(str){
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function renderContent(text){
+  // split on code fences ```lang\ncode\n```
+  const parts = text.split(/```(\w*)\n([\s\S]*?)```/g);
+  let html = "";
+  for(let i=0;i<parts.length;i+=3){
+    const plain = parts[i];
+    if(plain){
+      html += plain.split(/\n{2,}/).map(p=>`<p>${escapeHtml(p).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\n/g,'<br>')}</p>`).join("");
+    }
+    const lang = parts[i+1];
+    const code = parts[i+2];
+    if(code !== undefined){
+      html += `<pre><code>${escapeHtml(code.trim())}</code></pre>`;
+    }
+  }
+  return html || escapeHtml(text);
+}
+
+function addMessage(role, text){
+  welcomeMsg.style.display = "none";
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+  const label = document.createElement('span');
+  label.className = 'label';
+  label.textContent = role === 'user' ? 'Aap' : 'Code Guru';
+  div.appendChild(label);
+  const body = document.createElement('div');
+  body.innerHTML = renderContent(text);
+  div.appendChild(body);
+  chat.appendChild(div);
+  scrollToBottom();
+  return div;
+}
+
+function addTyping(){
+  const div = document.createElement('div');
+  div.className = 'msg ai typing';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  chat.appendChild(div);
+  scrollToBottom();
+}
+
+function removeTyping(){
+  const el = document.getElementById('typingIndicator');
+  if(el) el.remove();
+}
+
+async function sendMessage(text){
+  if(!text.trim()) return;
+  addMessage('user', text);
+  messages.push({role:'user', content: text});
+  input.value = "";
+  input.style.height = "auto";
+  sendBtn.disabled = true;
+  addTyping();
+
+  try{
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system: SYSTEM_PROMPT,
+        messages: messages
+      })
+    });
+    const data = await response.json();
+    removeTyping();
+    let replyText = "";
+    if(data && data.choices && data.choices[0] && data.choices[0].message){
+      replyText = data.choices[0].message.content || "";
+    }
+    if(!replyText){
+      // Asli error dikhao taaki debug karna aasan ho
+      replyText = "⚠️ DEBUG ERROR:\n" + JSON.stringify(data, null, 2);
+    }
+    addMessage('assistant', replyText);
+    messages.push({role:'assistant', content: replyText});
+  }catch(err){
+    removeTyping();
+    addMessage('assistant', "Network mein kuch dikkat aa gayi. Thodi der baad phir try karein.");
+    console.error(err);
+  }finally{
+    sendBtn.disabled = false;
+  }
+}
+
+sendBtn.addEventListener('click', () => sendMessage(input.value));
+input.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMessage(input.value);
+  }
+});
+input.addEventListener('input', () => {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 120) + "px";
+});
+
+tray.addEventListener('click', (e) => {
+  const btn = e.target.closest('.chalk-chip');
+  if(!btn) return;
+  const lang = btn.dataset.lang;
+  sendMessage(`Mujhe ${lang} bilkul shuru se, step by step, simple bhasha mein sikhao. Pehla concept batao.`);
+});
+</script>
+
+</body>
+</html>
