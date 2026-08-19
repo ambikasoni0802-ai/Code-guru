@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Code Guru — Coding Sikhne Ka Blackboard</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1b3a2f">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Code Guru">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Hind:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -253,6 +259,85 @@
   #sendBtn:active{transform:translateY(1px);box-shadow:0 1px 0 #a37f1e;}
   #sendBtn:disabled{opacity:0.5;cursor:not-allowed;}
 
+  /* ===== Main Tabs ===== */
+  .maintabs{
+    display:flex;
+    background:var(--board-dark);
+    border-bottom:2px solid var(--wood-dark);
+    position:relative;
+    z-index:1;
+    overflow-x:auto;
+  }
+  .maintab-btn{
+    flex:1;
+    min-width:82px;
+    background:none;
+    border:none;
+    color:var(--chalk-dim);
+    font-family:'Hind',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    padding:11px 6px;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    white-space:nowrap;
+  }
+  .maintab-btn.active{
+    color:var(--yellow);
+    border-bottom-color:var(--yellow);
+  }
+  .panel{display:none; flex:1; flex-direction:column; min-height:0;}
+  .panel.active{display:flex;}
+
+  /* ===== Editor panel ===== */
+  #editorPanel{padding:14px 14px 90px; overflow-y:auto; gap:12px;}
+  .editor-mode-row{display:flex; gap:8px; margin-bottom:6px; flex-wrap:wrap;}
+  .editor-mode-row button{
+    background:var(--sage); color:var(--chalk); border:none; border-radius:8px;
+    padding:9px 14px; font-family:'Hind',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+  }
+  .code-label{font-family:'Fira Code',monospace; font-size:12px; color:var(--yellow); margin:8px 0 4px;}
+  .code-input{
+    width:100%; min-height:90px; background:var(--board-dark); color:var(--chalk);
+    border:1.5px solid var(--sage); border-radius:8px; padding:10px; font-family:'Fira Code',monospace;
+    font-size:12.5px; resize:vertical;
+  }
+  .code-input:focus{border-color:var(--yellow); outline:none;}
+  #previewFrame{
+    width:100%; height:280px; border:1.5px solid var(--sage); border-radius:10px;
+    background:#fff; margin-top:10px;
+  }
+  .ai-build-row{display:flex; gap:8px; margin-top:10px;}
+  .ai-build-row input{
+    flex:1; background:var(--board-dark); color:var(--chalk); border:1.5px solid var(--sage);
+    border-radius:8px; padding:10px; font-family:'Hind',sans-serif; font-size:13.5px;
+  }
+  .ai-build-row button{
+    background:var(--yellow); color:var(--wood-dark); border:none; border-radius:8px;
+    padding:0 16px; font-family:'Baloo 2',cursive; font-weight:700; cursor:pointer;
+  }
+
+  /* ===== Deploy & Database panels ===== */
+  .simple-panel{padding:16px 16px 90px; overflow-y:auto; gap:14px;}
+  .card{
+    background:rgba(245,243,231,0.05); border:1.5px solid var(--sage); border-radius:12px;
+    padding:14px; margin-bottom:16px;
+  }
+  .card h3{font-family:'Baloo 2',cursive; margin:0 0 8px; font-size:16px; color:var(--yellow);}
+  .card p.hint{font-size:12px; color:var(--chalk-dim); margin:0 0 10px;}
+  .card input, .card textarea{
+    width:100%; background:var(--board-dark); color:var(--chalk); border:1.5px solid var(--sage);
+    border-radius:8px; padding:9px 11px; font-family:'Hind',sans-serif; font-size:13.5px; margin-bottom:8px;
+  }
+  .card button{
+    background:var(--yellow); color:var(--wood-dark); border:none; border-radius:8px;
+    padding:10px 16px; font-family:'Baloo 2',cursive; font-weight:700; cursor:pointer; font-size:13.5px;
+  }
+  .status-line{font-size:12.5px; margin-top:8px; font-family:'Fira Code',monospace; word-break:break-all;}
+  .status-line.ok{color:#8fb9a8;}
+  .status-line.err{color:var(--coral);}
+  .db-rows{margin-top:10px; font-family:'Fira Code',monospace; font-size:12px; background:var(--board-dark); border-radius:8px; padding:8px; max-height:180px; overflow-y:auto; white-space:pre-wrap;}
+
   #micBtn{
     background:var(--sage);
     color:var(--chalk);
@@ -299,7 +384,7 @@
 <header>
   <h1>Code Guru 🖊️</h1>
   <div class="underline"></div>
-  <p>Har coding language, ek dum simple bhasha mein, step-by-step</p>
+  <p id="tagline">Har coding language, ek dum simple bhasha mein, step-by-step</p>
   <select id="langSelect">
     <option value="Hindi (Hinglish)" data-locale="hi-IN" selected>🇮🇳 Hindi (Hinglish)</option>
     <option value="English" data-locale="en-IN">🇬🇧 English</option>
@@ -321,6 +406,8 @@
     <option value="Russian" data-locale="ru-RU">🇷🇺 Russian</option>
     <option value="Portuguese" data-locale="pt-BR">🇧🇷 Portuguese</option>
   </select>
+  <br>
+  <button id="installBtn" style="display:none; background:var(--yellow); color:var(--wood-dark); border:none; border-radius:20px; padding:8px 16px; font-family:'Baloo 2',cursive; font-weight:700; font-size:13px; cursor:pointer; margin-bottom:10px;">📲 App Install Karein</button>
 </header>
 
 <div class="tray" id="tray">
@@ -334,6 +421,15 @@
   <button class="chalk-chip c2" data-lang="SQL">🗄️ SQL</button>
 </div>
 
+<div class="maintabs">
+  <button class="maintab-btn active" data-panel="chatPanel">💬 Sikhna</button>
+  <button class="maintab-btn" data-panel="editorPanel">💻 Editor</button>
+  <button class="maintab-btn" data-panel="deployPanel">🚀 Deploy</button>
+  <button class="maintab-btn" data-panel="dbPanel">🗄️ Database</button>
+  <button class="maintab-btn" data-panel="androidPanel">📱 Android App</button>
+</div>
+
+<div class="panel active" id="chatPanel" style="flex-direction:column;">
 <main id="chat">
   <div class="welcome" id="welcomeMsg">
     Upar chalk tray se koi <b>language</b> chunein, ya neeche seedha apna sawaal type karein — jaise <i>"mujhe Python variables samjhao"</i> ya <i>"C++ mein loop kaise likhte hain"</i>.
@@ -345,6 +441,80 @@
   <textarea id="userInput" rows="1" placeholder="Apna sawaal yahan likhein... (jaise: Python mujhe shuru se sikhao)"></textarea>
   <button id="sendBtn">Bhejein</button>
 </footer>
+</div>
+
+<div class="panel" id="editorPanel">
+  <div class="editor-mode-row">
+    <button id="runPreviewBtn">▶️ Preview chalayein</button>
+    <button id="clearEditorBtn">🗑️ Saaf karein</button>
+  </div>
+  <div class="ai-build-row">
+    <input id="aiBuildInput" placeholder="AI se kya banwana hai? (jaise: ek to-do list app)">
+    <button id="aiBuildBtn">✨ AI se banwao</button>
+  </div>
+  <div class="code-label">HTML</div>
+  <textarea class="code-input" id="htmlCode" rows="4" placeholder="&lt;h1&gt;Hello&lt;/h1&gt;"></textarea>
+  <div class="code-label">CSS</div>
+  <textarea class="code-input" id="cssCode" rows="4" placeholder="h1{color:red;}"></textarea>
+  <div class="code-label">JavaScript</div>
+  <textarea class="code-input" id="jsCode" rows="4" placeholder="console.log('hi')"></textarea>
+  <div class="code-label">Live Preview</div>
+  <iframe id="previewFrame"></iframe>
+</div>
+
+<div class="panel simple-panel" id="deployPanel">
+  <div class="card">
+    <h3>🐙 GitHub par push karein</h3>
+    <p class="hint">Apna GitHub Personal Access Token (Settings → Developer settings → Tokens) yahan daalein. Ye sirf aapke browser mein save hota hai, kahin bhi bheja nahi jaata (sirf GitHub ko).</p>
+    <input id="ghToken" type="password" placeholder="GitHub Token (ghp_...)">
+    <input id="ghOwner" placeholder="GitHub username">
+    <input id="ghRepo" placeholder="Repository naam">
+    <input id="ghPath" placeholder="File path (jaise: index.html)" value="index.html">
+    <button id="ghPushBtn">Push karein</button>
+    <div class="status-line" id="ghStatus"></div>
+  </div>
+
+  <div class="card">
+    <h3>▲ Netlify par live deploy karein</h3>
+    <p class="hint">Apna Netlify Personal Access Token (User settings → Applications → New access token) daalein. Site ID khaali chodenge to nayi site ban jayegi.</p>
+    <input id="netToken" type="password" placeholder="Netlify Token">
+    <input id="netSiteId" placeholder="Site ID (khaali chhod sakte hain)">
+    <button id="netDeployBtn">Deploy karein</button>
+    <div class="status-line" id="netStatus"></div>
+  </div>
+</div>
+
+<div class="panel simple-panel" id="dbPanel">
+  <div class="card">
+    <h3>🗄️ Apna Database Jodein (Supabase — free)</h3>
+    <p class="hint">supabase.com par free account banayein, apna Project URL aur "anon public" key yahan daalein. Table pehle Supabase dashboard se banani hogi.</p>
+    <input id="sbUrl" placeholder="Supabase Project URL (https://xxxx.supabase.co)">
+    <input id="sbKey" type="password" placeholder="Supabase anon public key">
+    <input id="sbTable" placeholder="Table ka naam">
+    <button id="sbFetchBtn">Data dekhein</button>
+    <div class="db-rows" id="sbRows"></div>
+    <p class="hint" style="margin-top:14px;">Naya row jodne ke liye JSON likhein, jaise: {"name":"Test","value":"123"}</p>
+    <textarea id="sbInsertJson" rows="3" placeholder='{"column":"value"}'></textarea>
+    <button id="sbInsertBtn">Row jodein</button>
+    <div class="status-line" id="sbStatus"></div>
+  </div>
+</div>
+
+<div class="panel simple-panel" id="androidPanel">
+  <div class="card">
+    <h3>📱 Apni website ko Android App banayein</h3>
+    <p class="hint">Ye website ek PWA hai, isliye <b>PWABuilder</b> (Microsoft ka free, official tool) se asli installable <b>.apk</b> file ban sakti hai — bina Android Studio seekhe. Apni (ya kisi bhi) live website ka link daalein.</p>
+    <input id="pwaUrlInput" placeholder="Apni live website ka URL (jaise: https://your-site.netlify.app)">
+    <button id="openPwaBuilderBtn">🚀 APK Banayein (PWABuilder kholein)</button>
+    <p class="hint" style="margin-top:12px;">Waha jaakar: 1) URL check hoga → 2) "Package for Stores" → 3) "Android" choose karein → 4) Download button se apni .apk file mil jayegi. Wahi file phone mein install ho jayegi ya Play Store par bhi daal sakte hain.</p>
+  </div>
+
+  <div class="card">
+    <h3>🧩 Naya app blocks se banana ho (bina coding)</h3>
+    <p class="hint">Agar coding ke bina, drag-drop se ek alag Android app banana hai (jaise game ya calculator), to <b>MIT App Inventor</b> bhi ek accha, bilkul free, beginner-friendly tool hai.</p>
+    <button id="openAppInventorBtn">MIT App Inventor kholein</button>
+  </div>
+</div>
 
 <script>
 const MIC_ICON_SRC = "data:image/png;base64,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";
@@ -366,19 +536,249 @@ function getSelectedLangName(){
 function getSelectedLocale(){
   return langSelect.options[langSelect.selectedIndex].dataset.locale;
 }
+langSelect.addEventListener('change', applyUiLanguage);
 
 function buildSystemPrompt(langName){
   return `Tum "Code Guru" ho — ek bahut hi dhairya wale (patient), pyaar se samjhaane wale coding teacher, jo bilkul beginner students ko coding sikhate ho.
 
+SABSE ZAROORI RULE: Tumhara HAR jawab SIRF "${langName}" bhasha mein hona chahiye — chahe student ne apna sawaal kisi bhi bhasha mein poocha ho, tumhe hamesha "${langName}" mein hi jawab dena hai. Agar "${langName}" "Hindi (Hinglish)" hai to Hindi-English mix (Hinglish) use karo. Kisi bhi aur bhasha ke liye poori tarah usi bhasha ki script aur vocabulary mein likho (sirf code aur zaroori technical keywords English/Latin script mein reh sakte hain, baaki sab "${langName}" mein).
+
 Rules:
-- Hamesha ${langName} bhasha mein samjhao, jaise ek dost ya ek acha teacher class mein bolta hai. Agar langName "Hindi (Hinglish)" hai to Hindi-English mix (Hinglish) use karo. Kisi bhi aur bhasha ke liye poori tarah usi bhasha mein jawab do (sirf code aur technical keywords English mein reh sakte hain).
 - Har cheez STEP BY STEP samjhao — ek dum shuru se, chhote-chhote steps mein, ek concept complete hone ke baad hi agla concept do.
-- Duniya ki koi bhi coding language ho sakti hai — Python, Java, C, C++, JavaScript, Kotlin, Swift, Go, Rust, PHP, SQL, HTML/CSS, etc. Jo bhi student poochhe, usi language mein sikhao.
+- Duniya ki koi bhi coding language ho sakti hai — Python, Java, C, C++, JavaScript, Kotlin, Swift, Go, Rust, PHP, SQL, HTML/CSS, etc. Jo bhi student poochhe, usi language mein sikhao (coding language alag cheez hai, jawab dene ki bhasha "${langName}" hamesha same rahegi).
 - Chhote, practical code examples do (code ko \`\`\`language code blocks\`\`\` mein likho), aur har line ka kaam simple shabdon mein bolke samjhao.
 - Beginner-friendly analogies use karo taaki concept turant samajh aa jaaye (roz ki zindagi ki misaal do).
 - Har jawab ke end mein ek chhota sa practice sawaal ya "try karo" task do, taaki student practice kar sake.
-- Agar student ka sawaal unclear ho, to pyaar se ek chhota sa clarifying sawaal pooch lo.
+- Agar student ka sawaal unclear ho, to pyaar se ek chhota sa clarifying sawaal pooch lo — wo bhi "${langName}" mein hi.
 - Responses zyada lambe mat karo — ek baar mein ek concept, achhi tarah samjhao, overload mat karo.`;
+}
+
+// ===== Poori website ka language system =====
+const TRANSLATIONS = {
+  "Hindi (Hinglish)": {
+    tagline: "Har coding language, ek dum simple bhasha mein, step-by-step",
+    placeholder: "Apna sawaal yahan likhein... (jaise: Python mujhe shuru se sikhao)",
+    sendBtn: "Bhejein", aap: "Aap", guru: "Code Guru", micTitle: "Bol kar poochein",
+    suno: "Suno", rokdein: "Rok dein",
+    welcome: `Upar chalk tray se koi <b>language</b> chunein, ya neeche seedha apna sawaal type karein — jaise <i>"mujhe Python variables samjhao"</i> ya <i>"C++ mein loop kaise likhte hain"</i>.`,
+    chipPrompt: (l) => `Mujhe ${l} bilkul shuru se, step by step, simple bhasha mein sikhao. Pehla concept batao.`,
+    voiceError: "Maaf kijiye, aapka browser voice input support nahi karta. Chrome browser try karein.",
+    genericError: "Maaf kijiye, kuch gadbad ho gayi. Dobara try karein.",
+    networkError: "Network mein kuch dikkat aa gayi. Thodi der baad phir try karein."
+  },
+  "English": {
+    tagline: "Every coding language, explained simply, step-by-step",
+    placeholder: "Type your question here... (e.g. teach me Python from scratch)",
+    sendBtn: "Send", aap: "You", guru: "Code Guru", micTitle: "Ask by speaking",
+    suno: "Listen", rokdein: "Stop",
+    welcome: `Pick a <b>language</b> from the tray above, or type your question directly below — like <i>"explain Python variables to me"</i> or <i>"how do loops work in C++"</i>.`,
+    chipPrompt: (l) => `Teach me ${l} from the very beginning, step by step, in simple language. Tell me the first concept.`,
+    voiceError: "Sorry, your browser doesn't support voice input. Try the Chrome browser.",
+    genericError: "Sorry, something went wrong. Please try again.",
+    networkError: "There was a network problem. Please try again in a moment."
+  },
+  "Marathi": {
+    tagline: "प्रत्येक कोडिंग भाषा, अगदी सोप्या भाषेत, टप्प्याटप्प्याने",
+    placeholder: "तुमचा प्रश्न इथे लिहा... (उदा: मला Python सुरुवातीपासून शिकवा)",
+    sendBtn: "पाठवा", aap: "तुम्ही", guru: "Code Guru", micTitle: "बोलून विचारा",
+    suno: "ऐका", rokdein: "थांबवा",
+    welcome: `वरील ट्रेमधून एखादी <b>भाषा</b> निवडा, किंवा खाली थेट तुमचा प्रश्न टाइप करा.`,
+    chipPrompt: (l) => `मला ${l} अगदी सुरुवातीपासून, टप्प्याटप्प्याने, सोप्या भाषेत शिकवा. पहिली संकल्पना सांगा.`,
+    voiceError: "माफ करा, तुमचा ब्राउझर व्हॉइस इनपुट सपोर्ट करत नाही. Chrome ब्राउझर वापरून पहा.",
+    genericError: "माफ करा, काहीतरी चूक झाली. पुन्हा प्रयत्न करा.",
+    networkError: "नेटवर्कमध्ये अडचण आली. थोड्या वेळाने पुन्हा प्रयत्न करा."
+  },
+  "Bengali": {
+    tagline: "প্রতিটি কোডিং ভাষা, একদম সহজ ভাষায়, ধাপে ধাপে",
+    placeholder: "আপনার প্রশ্ন এখানে লিখুন... (যেমন: আমাকে Python শুরু থেকে শেখান)",
+    sendBtn: "পাঠান", aap: "আপনি", guru: "Code Guru", micTitle: "বলে জিজ্ঞাসা করুন",
+    suno: "শুনুন", rokdein: "থামান",
+    welcome: `উপরের ট্রে থেকে একটি <b>ভাষা</b> বেছে নিন, অথবা নিচে সরাসরি আপনার প্রশ্ন লিখুন।`,
+    chipPrompt: (l) => `আমাকে ${l} একদম শুরু থেকে, ধাপে ধাপে, সহজ ভাষায় শেখান। প্রথম ধারণাটি বলুন।`,
+    voiceError: "দুঃখিত, আপনার ব্রাউজার ভয়েস ইনপুট সমর্থন করে না। Chrome ব্রাউজার ব্যবহার করুন।",
+    genericError: "দুঃখিত, কিছু ভুল হয়েছে। আবার চেষ্টা করুন।",
+    networkError: "নেটওয়ার্কে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।"
+  },
+  "Tamil": {
+    tagline: "ஒவ்வொரு கோடிங் மொழியும், மிக எளிய மொழியில், படிப்படியாக",
+    placeholder: "உங்கள் கேள்வியை இங்கே தட்டச்சு செய்யவும்... (எ.கா: எனக்கு Python ஆரம்பத்திலிருந்து கற்பிக்கவும்)",
+    sendBtn: "அனுப்பு", aap: "நீங்கள்", guru: "Code Guru", micTitle: "பேசி கேளுங்கள்",
+    suno: "கேளுங்கள்", rokdein: "நிறுத்து",
+    welcome: `மேலே உள்ள tray இலிருந்து ஒரு <b>மொழியை</b> தேர்ந்தெடுக்கவும், அல்லது கீழே உங்கள் கேள்வியை நேரடியாக தட்டச்சு செய்யவும்.`,
+    chipPrompt: (l) => `எனக்கு ${l} முற்றிலும் தொடக்கத்திலிருந்து, படிப்படியாக, எளிய மொழியில் கற்பிக்கவும். முதல் கருத்தை சொல்லுங்கள்.`,
+    voiceError: "மன்னிக்கவும், உங்கள் browser குரல் உள்ளீட்டை ஆதரிக்கவில்லை. Chrome browser முயற்சிக்கவும்.",
+    genericError: "மன்னிக்கவும், ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.",
+    networkError: "நெட்வொர்க் பிரச்சனை ஏற்பட்டது. சிறிது நேரம் கழித்து முயற்சிக்கவும்."
+  },
+  "Telugu": {
+    tagline: "ప్రతి కోడింగ్ భాష, చాలా సులభమైన భాషలో, దశలవారీగా",
+    placeholder: "మీ ప్రశ్నను ఇక్కడ టైప్ చేయండి... (ఉదా: నాకు Python మొదటి నుండి నేర్పండి)",
+    sendBtn: "పంపండి", aap: "మీరు", guru: "Code Guru", micTitle: "మాట్లాడి అడగండి",
+    suno: "వినండి", rokdein: "ఆపు",
+    welcome: `పైన ఉన్న ట్రే నుండి ఒక <b>భాషను</b> ఎంచుకోండి, లేదా క్రింద నేరుగా మీ ప్రశ్నను టైప్ చేయండి.`,
+    chipPrompt: (l) => `నాకు ${l} పూర్తిగా మొదటి నుండి, దశలవారీగా, సులభమైన భాషలో నేర్పండి. మొదటి భావనను చెప్పండి.`,
+    voiceError: "క్షమించండి, మీ బ్రౌజర్ వాయిస్ ఇన్‌పుట్‌ను సపోర్ట్ చేయదు. Chrome బ్రౌజర్ ప్రయత్నించండి.",
+    genericError: "క్షమించండి, ఏదో తప్పు జరిగింది. మళ్ళీ ప్రయత్నించండి.",
+    networkError: "నెట్‌వర్క్‌లో సమస్య వచ్చింది. కొద్దిసేపటి తర్వాత మళ్ళీ ప్రయత్నించండి."
+  },
+  "Gujarati": {
+    tagline: "દરેક કોડિંગ ભાષા, ખૂબ જ સરળ ભાષામાં, પગલું-બાય-પગલું",
+    placeholder: "તમારો પ્રશ્ન અહીં લખો... (દા.ત.: મને Python શરૂઆતથી શીખવો)",
+    sendBtn: "મોકલો", aap: "તમે", guru: "Code Guru", micTitle: "બોલીને પૂછો",
+    suno: "સાંભળો", rokdein: "રોકો",
+    welcome: `ઉપરના ટ્રે માંથી <b>ભાષા</b> પસંદ કરો, અથવા નીચે સીધો તમારો પ્રશ્ન લખો.`,
+    chipPrompt: (l) => `મને ${l} બિલકુલ શરૂઆતથી, પગલું-બાય-પગલું, સરળ ભાષામાં શીખવો. પહેલો ખ્યાલ કહો.`,
+    voiceError: "માફ કરશો, તમારું બ્રાઉઝર વૉઇસ ઇનપુટને સપોર્ટ કરતું નથી. Chrome બ્રાઉઝર અજમાવો.",
+    genericError: "માફ કરશો, કંઈક ખોટું થયું. ફરી પ્રયાસ કરો.",
+    networkError: "નેટવર્કમાં સમસ્યા આવી. થોડી વાર પછી ફરી પ્રયાસ કરો."
+  },
+  "Punjabi": {
+    tagline: "ਹਰ ਕੋਡਿੰਗ ਭਾਸ਼ਾ, ਬਹੁਤ ਹੀ ਸੌਖੀ ਭਾਸ਼ਾ ਵਿੱਚ, ਕਦਮ-ਦਰ-ਕਦਮ",
+    placeholder: "ਆਪਣਾ ਸਵਾਲ ਇੱਥੇ ਲਿਖੋ... (ਜਿਵੇਂ: ਮੈਨੂੰ Python ਸ਼ੁਰੂ ਤੋਂ ਸਿਖਾਓ)",
+    sendBtn: "ਭੇਜੋ", aap: "ਤੁਸੀਂ", guru: "Code Guru", micTitle: "ਬੋਲ ਕੇ ਪੁੱਛੋ",
+    suno: "ਸੁਣੋ", rokdein: "ਰੋਕੋ",
+    welcome: `ਉੱਪਰ ਟ੍ਰੇ ਤੋਂ ਕੋਈ <b>ਭਾਸ਼ਾ</b> ਚੁਣੋ, ਜਾਂ ਹੇਠਾਂ ਸਿੱਧਾ ਆਪਣਾ ਸਵਾਲ ਲਿਖੋ।`,
+    chipPrompt: (l) => `ਮੈਨੂੰ ${l} ਬਿਲਕੁਲ ਸ਼ੁਰੂ ਤੋਂ, ਕਦਮ-ਦਰ-ਕਦਮ, ਸੌਖੀ ਭਾਸ਼ਾ ਵਿੱਚ ਸਿਖਾਓ। ਪਹਿਲੀ ਧਾਰਨਾ ਦੱਸੋ।`,
+    voiceError: "ਮਾਫ਼ ਕਰਨਾ, ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਰ ਵੌਇਸ ਇਨਪੁੱਟ ਸਪੋਰਟ ਨਹੀਂ ਕਰਦਾ। Chrome ਬ੍ਰਾਊਜ਼ਰ ਵਰਤੋ।",
+    genericError: "ਮਾਫ਼ ਕਰਨਾ, ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    networkError: "ਨੈੱਟਵਰਕ ਵਿੱਚ ਸਮੱਸਿਆ ਆਈ। ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+  },
+  "Kannada": {
+    tagline: "ಪ್ರತಿ ಕೋಡಿಂಗ್ ಭಾಷೆ, ತುಂಬಾ ಸರಳ ಭಾಷೆಯಲ್ಲಿ, ಹಂತ ಹಂತವಾಗಿ",
+    placeholder: "ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಇಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ... (ಉದಾ: ನನಗೆ Python ಆರಂಭದಿಂದ ಕಲಿಸಿ)",
+    sendBtn: "ಕಳುಹಿಸಿ", aap: "ನೀವು", guru: "Code Guru", micTitle: "ಮಾತನಾಡಿ ಕೇಳಿ",
+    suno: "ಕೇಳಿ", rokdein: "ನಿಲ್ಲಿಸಿ",
+    welcome: `ಮೇಲಿನ ಟ್ರೇಯಿಂದ ಒಂದು <b>ಭಾಷೆಯನ್ನು</b> ಆರಿಸಿ, ಅಥವಾ ಕೆಳಗೆ ನೇರವಾಗಿ ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ.`,
+    chipPrompt: (l) => `ನನಗೆ ${l} ಸಂಪೂರ್ಣವಾಗಿ ಆರಂಭದಿಂದ, ಹಂತ ಹಂತವಾಗಿ, ಸರಳ ಭಾಷೆಯಲ್ಲಿ ಕಲಿಸಿ. ಮೊದಲ ಪರಿಕಲ್ಪನೆಯನ್ನು ಹೇಳಿ.`,
+    voiceError: "ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಬ್ರೌಸರ್ ಧ್ವನಿ ಇನ್‌ಪುಟ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. Chrome ಬ್ರೌಸರ್ ಪ್ರಯತ್ನಿಸಿ.",
+    genericError: "ಕ್ಷಮಿಸಿ, ಏನೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    networkError: "ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ಸಮಸ್ಯೆ ಉಂಟಾಗಿದೆ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
+  },
+  "Malayalam": {
+    tagline: "എല്ലാ കോഡിംഗ് ഭാഷയും, വളരെ ലളിതമായ ഭാഷയിൽ, ഘട്ടം ഘട്ടമായി",
+    placeholder: "നിങ്ങളുടെ ചോദ്യം ഇവിടെ ടൈപ്പ് ചെയ്യുക... (ഉദാ: എന്നെ Python തുടക്കം മുതൽ പഠിപ്പിക്കൂ)",
+    sendBtn: "അയയ്ക്കുക", aap: "നിങ്ങൾ", guru: "Code Guru", micTitle: "സംസാരിച്ച് ചോദിക്കുക",
+    suno: "കേൾക്കുക", rokdein: "നിർത്തുക",
+    welcome: `മുകളിലുള്ള ട്രേയിൽ നിന്ന് ഒരു <b>ഭാഷ</b> തിരഞ്ഞെടുക്കുക, അല്ലെങ്കിൽ താഴെ നേരിട്ട് നിങ്ങളുടെ ചോദ്യം ടൈപ്പ് ചെയ്യുക.`,
+    chipPrompt: (l) => `എന്നെ ${l} തുടക്കം മുതൽ, ഘട്ടം ഘട്ടമായി, ലളിതമായ ഭാഷയിൽ പഠിപ്പിക്കൂ. ആദ്യ ആശയം പറയൂ.`,
+    voiceError: "ക്ഷമിക്കണം, നിങ്ങളുടെ ബ്രൗസർ വോയ്‌സ് ഇൻപുട്ട് പിന്തുണയ്ക്കുന്നില്ല. Chrome ബ്രൗസർ ശ്രമിക്കുക.",
+    genericError: "ക്ഷമിക്കണം, എന്തോ പിശക് സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക.",
+    networkError: "നെറ്റ്‌വർക്കിൽ പ്രശ്നം ഉണ്ടായി. കുറച്ച് കഴിഞ്ഞ് വീണ്ടും ശ്രമിക്കുക."
+  },
+  "Urdu": {
+    tagline: "ہر کوڈنگ زبان، بالکل آسان زبان میں، قدم بہ قدم",
+    placeholder: "اپنا سوال یہاں لکھیں... (مثلاً: مجھے Python شروع سے سکھائیں)",
+    sendBtn: "بھیجیں", aap: "آپ", guru: "Code Guru", micTitle: "بول کر پوچھیں",
+    suno: "سنیں", rokdein: "روکیں",
+    welcome: `اوپر ٹرے سے کوئی <b>زبان</b> منتخب کریں، یا نیچے براہ راست اپنا سوال ٹائپ کریں۔`,
+    chipPrompt: (l) => `مجھے ${l} بالکل شروع سے، قدم بہ قدم، آسان زبان میں سکھائیں۔ پہلا تصور بتائیں۔`,
+    voiceError: "معذرت، آپ کا براؤزر وائس ان پٹ سپورٹ نہیں کرتا۔ Chrome براؤزر آزمائیں۔",
+    genericError: "معذرت، کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔",
+    networkError: "نیٹ ورک میں مسئلہ آیا۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔"
+  },
+  "Spanish": {
+    tagline: "Cada lenguaje de programación, explicado de forma simple, paso a paso",
+    placeholder: "Escribe tu pregunta aquí... (ej: enséñame Python desde cero)",
+    sendBtn: "Enviar", aap: "Tú", guru: "Code Guru", micTitle: "Pregunta hablando",
+    suno: "Escuchar", rokdein: "Detener",
+    welcome: `Elige un <b>idioma</b> de la bandeja de arriba, o escribe tu pregunta directamente abajo.`,
+    chipPrompt: (l) => `Enséñame ${l} completamente desde cero, paso a paso, en un lenguaje simple. Dime el primer concepto.`,
+    voiceError: "Lo siento, tu navegador no soporta la entrada de voz. Prueba con Chrome.",
+    genericError: "Lo siento, algo salió mal. Inténtalo de nuevo.",
+    networkError: "Hubo un problema de red. Inténtalo de nuevo en un momento."
+  },
+  "French": {
+    tagline: "Chaque langage de programmation, expliqué simplement, étape par étape",
+    placeholder: "Tapez votre question ici... (ex: apprends-moi Python depuis le début)",
+    sendBtn: "Envoyer", aap: "Vous", guru: "Code Guru", micTitle: "Demander en parlant",
+    suno: "Écouter", rokdein: "Arrêter",
+    welcome: `Choisissez une <b>langue</b> dans le plateau ci-dessus, ou tapez directement votre question ci-dessous.`,
+    chipPrompt: (l) => `Apprends-moi ${l} depuis le tout début, étape par étape, dans un langage simple. Dis-moi le premier concept.`,
+    voiceError: "Désolé, votre navigateur ne prend pas en charge la saisie vocale. Essayez Chrome.",
+    genericError: "Désolé, quelque chose s'est mal passé. Réessayez.",
+    networkError: "Un problème réseau est survenu. Réessayez dans un instant."
+  },
+  "German": {
+    tagline: "Jede Programmiersprache, einfach erklärt, Schritt für Schritt",
+    placeholder: "Gib deine Frage hier ein... (z.B.: bring mir Python von Grund auf bei)",
+    sendBtn: "Senden", aap: "Du", guru: "Code Guru", micTitle: "Sprich, um zu fragen",
+    suno: "Anhören", rokdein: "Stopp",
+    welcome: `Wähle eine <b>Sprache</b> aus dem Tablett oben, oder tippe deine Frage direkt unten ein.`,
+    chipPrompt: (l) => `Bring mir ${l} von Grund auf bei, Schritt für Schritt, in einfacher Sprache. Nenne mir das erste Konzept.`,
+    voiceError: "Entschuldigung, dein Browser unterstützt keine Spracheingabe. Probiere Chrome.",
+    genericError: "Entschuldigung, etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    networkError: "Es gab ein Netzwerkproblem. Bitte versuche es gleich noch einmal."
+  },
+  "Arabic": {
+    tagline: "كل لغة برمجة، بأبسط شرح، خطوة بخطوة",
+    placeholder: "اكتب سؤالك هنا... (مثال: علمني Python من البداية)",
+    sendBtn: "إرسال", aap: "أنت", guru: "Code Guru", micTitle: "اسأل بالتحدث",
+    suno: "استمع", rokdein: "إيقاف",
+    welcome: `اختر <b>لغة</b> من الأعلى، أو اكتب سؤالك مباشرة أدناه.`,
+    chipPrompt: (l) => `علمني ${l} من البداية تمامًا، خطوة بخطوة، بلغة بسيطة. أخبرني بالمفهوم الأول.`,
+    voiceError: "عذرًا، متصفحك لا يدعم الإدخال الصوتي. جرب متصفح Chrome.",
+    genericError: "عذرًا، حدث خطأ ما. حاول مرة أخرى.",
+    networkError: "حدثت مشكلة في الشبكة. حاول مرة أخرى بعد قليل."
+  },
+  "Chinese": {
+    tagline: "每种编程语言，用最简单的方式，逐步讲解",
+    placeholder: "在此输入您的问题...（例如：从零开始教我 Python）",
+    sendBtn: "发送", aap: "你", guru: "Code Guru", micTitle: "说话提问",
+    suno: "收听", rokdein: "停止",
+    welcome: `从上方选择一种<b>语言</b>，或直接在下方输入您的问题。`,
+    chipPrompt: (l) => `从最基础开始，一步一步地，用简单的语言教我 ${l}。告诉我第一个概念。`,
+    voiceError: "抱歉，您的浏览器不支持语音输入。请尝试使用 Chrome 浏览器。",
+    genericError: "抱歉，出了点问题。请重试。",
+    networkError: "网络出现问题。请稍后重试。"
+  },
+  "Japanese": {
+    tagline: "すべてのプログラミング言語を、とてもシンプルに、一歩ずつ",
+    placeholder: "ここに質問を入力してください...（例：Pythonを最初から教えて）",
+    sendBtn: "送信", aap: "あなた", guru: "Code Guru", micTitle: "話して質問する",
+    suno: "聞く", rokdein: "停止",
+    welcome: `上のトレイから<b>言語</b>を選ぶか、下に直接質問を入力してください。`,
+    chipPrompt: (l) => `${l}を最初から、一歩ずつ、簡単な言葉で教えてください。最初の概念を教えてください。`,
+    voiceError: "申し訳ありませんが、お使いのブラウザは音声入力に対応していません。Chromeをお試しください。",
+    genericError: "申し訳ありません、問題が発生しました。もう一度お試しください。",
+    networkError: "ネットワークに問題がありました。しばらくしてからもう一度お試しください。"
+  },
+  "Russian": {
+    tagline: "Каждый язык программирования, простым языком, шаг за шагом",
+    placeholder: "Введите свой вопрос здесь... (например: научи меня Python с нуля)",
+    sendBtn: "Отправить", aap: "Вы", guru: "Code Guru", micTitle: "Спросить голосом",
+    suno: "Слушать", rokdein: "Стоп",
+    welcome: `Выберите <b>язык</b> на панели выше, или введите вопрос прямо ниже.`,
+    chipPrompt: (l) => `Научи меня ${l} с самого начала, шаг за шагом, простым языком. Расскажи первую концепцию.`,
+    voiceError: "Извините, ваш браузер не поддерживает голосовой ввод. Попробуйте Chrome.",
+    genericError: "Извините, что-то пошло не так. Попробуйте снова.",
+    networkError: "Возникла проблема с сетью. Попробуйте снова через минуту."
+  },
+  "Portuguese": {
+    tagline: "Cada linguagem de programação, explicada de forma simples, passo a passo",
+    placeholder: "Digite sua pergunta aqui... (ex: me ensine Python do zero)",
+    sendBtn: "Enviar", aap: "Você", guru: "Code Guru", micTitle: "Pergunte falando",
+    suno: "Ouvir", rokdein: "Parar",
+    welcome: `Escolha um <b>idioma</b> na bandeja acima, ou digite sua pergunta diretamente abaixo.`,
+    chipPrompt: (l) => `Me ensine ${l} totalmente do zero, passo a passo, em linguagem simples. Diga-me o primeiro conceito.`,
+    voiceError: "Desculpe, seu navegador não suporta entrada de voz. Tente o navegador Chrome.",
+    genericError: "Desculpe, algo deu errado. Tente novamente.",
+    networkError: "Houve um problema de rede. Tente novamente em instantes."
+  }
+};
+
+let currentT = TRANSLATIONS["Hindi (Hinglish)"];
+
+function applyUiLanguage(){
+  const langName = getSelectedLangName();
+  currentT = TRANSLATIONS[langName] || TRANSLATIONS["Hindi (Hinglish)"];
+  document.getElementById('tagline').textContent = currentT.tagline;
+  input.placeholder = currentT.placeholder;
+  sendBtn.textContent = currentT.sendBtn;
+  micBtn.title = currentT.micTitle;
+  // Welcome message sirf tab badlo jab tak koi chat shuru nahi hui
+  if(messages.length === 0){
+    welcomeMsg.innerHTML = currentT.welcome;
+  }
 }
 
 let messages = [];
@@ -427,7 +827,7 @@ function speakText(text, btn){
   if(!('speechSynthesis' in window)) return;
   if(currentUtterance && speechSynthesis.speaking){
     speechSynthesis.cancel();
-    document.querySelectorAll('.speak-btn.speaking').forEach(b => { b.classList.remove('speaking'); b.innerHTML = speakBtnHTML('Suno'); });
+    document.querySelectorAll('.speak-btn.speaking').forEach(b => { b.classList.remove('speaking'); b.innerHTML = speakBtnHTML(currentT.suno); });
     if(btn && btn.dataset.wasSpeaking === "1") { btn.dataset.wasSpeaking = "0"; return; }
   }
   const cleaned = stripForSpeech(text);
@@ -437,9 +837,9 @@ function speakText(text, btn){
   currentUtterance = utter;
   if(btn){
     btn.classList.add('speaking');
-    btn.innerHTML = speakBtnHTML('Rok dein');
+    btn.innerHTML = speakBtnHTML(currentT.rokdein);
     btn.dataset.wasSpeaking = "1";
-    utter.onend = () => { btn.classList.remove('speaking'); btn.innerHTML = speakBtnHTML('Suno'); btn.dataset.wasSpeaking = "0"; };
+    utter.onend = () => { btn.classList.remove('speaking'); btn.innerHTML = speakBtnHTML(currentT.suno); btn.dataset.wasSpeaking = "0"; };
   }
   speechSynthesis.speak(utter);
 }
@@ -450,7 +850,7 @@ function addMessage(role, text){
   div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
   const label = document.createElement('span');
   label.className = 'label';
-  label.textContent = role === 'user' ? 'Aap' : 'Code Guru';
+  label.textContent = role === 'user' ? currentT.aap : currentT.guru;
   div.appendChild(label);
   const body = document.createElement('div');
   body.innerHTML = renderContent(text);
@@ -458,7 +858,7 @@ function addMessage(role, text){
   if(role !== 'user' && 'speechSynthesis' in window){
     const speakBtn = document.createElement('button');
     speakBtn.className = 'speak-btn';
-    speakBtn.innerHTML = speakBtnHTML('Suno');
+    speakBtn.innerHTML = speakBtnHTML(currentT.suno);
     speakBtn.addEventListener('click', () => speakText(text, speakBtn));
     div.appendChild(speakBtn);
   }
@@ -506,13 +906,13 @@ async function sendMessage(text){
       replyText = data.choices[0].message.content || "";
     }
     if(!replyText){
-      replyText = "Maaf kijiye, kuch gadbad ho gayi. Dobara try karein.";
+      replyText = currentT.genericError;
     }
     addMessage('assistant', replyText);
     messages.push({role:'assistant', content: replyText});
   }catch(err){
     removeTyping();
-    addMessage('assistant', "Network mein kuch dikkat aa gayi. Thodi der baad phir try karein.");
+    addMessage('assistant', currentT.networkError);
     console.error(err);
   }finally{
     sendBtn.disabled = false;
@@ -535,7 +935,7 @@ tray.addEventListener('click', (e) => {
   const btn = e.target.closest('.chalk-chip');
   if(!btn) return;
   const lang = btn.dataset.lang;
-  sendMessage(`Mujhe ${lang} bilkul shuru se, step by step, simple bhasha mein sikhao. Pehla concept batao.`);
+  sendMessage(currentT.chipPrompt(lang));
 });
 
 // ===== Voice input (bol kar poochna) =====
@@ -579,9 +979,238 @@ if(SpeechRecognitionAPI){
   });
 }else{
   micBtn.addEventListener('click', () => {
-    addMessage('assistant', 'Maaf kijiye, aapka browser voice input support nahi karta. Chrome browser try karein.');
+    addMessage('assistant', currentT.voiceError);
   });
 }
+
+// ===== Main Tabs =====
+document.querySelectorAll('.maintab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.maintab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.panel).classList.add('active');
+  });
+});
+
+// ===== Editor: Live Preview =====
+const htmlCode = document.getElementById('htmlCode');
+const cssCode = document.getElementById('cssCode');
+const jsCode = document.getElementById('jsCode');
+const previewFrame = document.getElementById('previewFrame');
+
+function runPreview(){
+  const doc = `<!DOCTYPE html><html><head><style>${cssCode.value}</style></head><body>${htmlCode.value}<script>${jsCode.value}<\/script></body></html>`;
+  previewFrame.srcdoc = doc;
+}
+document.getElementById('runPreviewBtn').addEventListener('click', runPreview);
+document.getElementById('clearEditorBtn').addEventListener('click', () => {
+  htmlCode.value = ""; cssCode.value = ""; jsCode.value = "";
+  previewFrame.srcdoc = "";
+});
+
+// ===== Editor: AI se code banwana =====
+const aiBuildBtn = document.getElementById('aiBuildBtn');
+const aiBuildInput = document.getElementById('aiBuildInput');
+
+async function askAiToBuild(promptText){
+  aiBuildBtn.disabled = true;
+  aiBuildBtn.textContent = "⏳ Bana raha hai...";
+  try{
+    const buildSystem = `Tum ek expert full-stack developer ho. User jo bhi app/website banwana chahega, uska poora, kaam karne wala code do.
+Hamesha jawab is exact format mein do — teen alag code blocks mein:
+\`\`\`html
+(sirf body ka HTML content, <html> ya <head> tags mat likho)
+\`\`\`
+\`\`\`css
+(poora CSS)
+\`\`\`
+\`\`\`javascript
+(poora JavaScript)
+\`\`\`
+Koi extra explanation mat do, sirf teeno code blocks do. Code clean, modern aur turant chalne layak hona chahiye.`;
+
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system: buildSystem,
+        messages: [{ role: 'user', content: promptText }]
+      })
+    });
+    const data = await response.json();
+    const replyText = data?.choices?.[0]?.message?.content || "";
+
+    const htmlMatch = replyText.match(/```html\n([\s\S]*?)```/);
+    const cssMatch = replyText.match(/```css\n([\s\S]*?)```/);
+    const jsMatch = replyText.match(/```(?:javascript|js)\n([\s\S]*?)```/);
+
+    if(htmlMatch) htmlCode.value = htmlMatch[1].trim();
+    if(cssMatch) cssCode.value = cssMatch[1].trim();
+    if(jsMatch) jsCode.value = jsMatch[1].trim();
+
+    runPreview();
+  }catch(e){
+    alert("Kuch gadbad ho gayi: " + e.message);
+  }finally{
+    aiBuildBtn.disabled = false;
+    aiBuildBtn.textContent = "✨ AI se banwao";
+  }
+}
+aiBuildBtn.addEventListener('click', () => {
+  if(aiBuildInput.value.trim()) askAiToBuild(aiBuildInput.value.trim());
+});
+
+// ===== Deploy: GitHub push =====
+document.getElementById('ghPushBtn').addEventListener('click', async () => {
+  const token = document.getElementById('ghToken').value.trim();
+  const owner = document.getElementById('ghOwner').value.trim();
+  const repo = document.getElementById('ghRepo').value.trim();
+  const path = document.getElementById('ghPath').value.trim() || 'index.html';
+  const statusEl = document.getElementById('ghStatus');
+  const fullDoc = `<!DOCTYPE html><html><head><style>${cssCode.value}</style></head><body>${htmlCode.value}<script>${jsCode.value}<\/script></body></html>`;
+
+  if(!token || !owner || !repo){
+    statusEl.className = 'status-line err';
+    statusEl.textContent = 'Token, username, aur repo naam zaroori hai.';
+    return;
+  }
+  statusEl.className = 'status-line';
+  statusEl.textContent = 'Push ho raha hai...';
+  try{
+    const res = await fetch('/.netlify/functions/github-deploy', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token, owner, repo, path, content: fullDoc, message: 'Code Guru se update' })
+    });
+    const result = await res.json();
+    if(res.ok){
+      statusEl.className = 'status-line ok';
+      statusEl.textContent = '✅ Push ho gaya: ' + (result.content?.html_url || 'success');
+    }else{
+      statusEl.className = 'status-line err';
+      statusEl.textContent = '❌ ' + (result.message || JSON.stringify(result));
+    }
+  }catch(e){
+    statusEl.className = 'status-line err';
+    statusEl.textContent = '❌ ' + e.message;
+  }
+});
+
+// ===== Deploy: Netlify live deploy =====
+document.getElementById('netDeployBtn').addEventListener('click', async () => {
+  const token = document.getElementById('netToken').value.trim();
+  const siteId = document.getElementById('netSiteId').value.trim();
+  const statusEl = document.getElementById('netStatus');
+  const fullDoc = `<!DOCTYPE html><html><head><style>${cssCode.value}</style></head><body>${htmlCode.value}<script>${jsCode.value}<\/script></body></html>`;
+
+  if(!token){
+    statusEl.className = 'status-line err';
+    statusEl.textContent = 'Netlify token zaroori hai.';
+    return;
+  }
+  statusEl.className = 'status-line';
+  statusEl.textContent = 'Deploy ho raha hai...';
+  try{
+    const res = await fetch('/.netlify/functions/netlify-deploy', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token, siteId, content: fullDoc })
+    });
+    const result = await res.json();
+    if(res.ok){
+      statusEl.className = 'status-line ok';
+      statusEl.textContent = '✅ Live ho gaya: ' + result.url;
+    }else{
+      statusEl.className = 'status-line err';
+      statusEl.textContent = '❌ ' + (result.error || JSON.stringify(result));
+    }
+  }catch(e){
+    statusEl.className = 'status-line err';
+    statusEl.textContent = '❌ ' + e.message;
+  }
+});
+
+// ===== Database: Supabase =====
+function sbHeaders(key){
+  return { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' };
+}
+document.getElementById('sbFetchBtn').addEventListener('click', async () => {
+  const url = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('sbKey').value.trim();
+  const table = document.getElementById('sbTable').value.trim();
+  const rowsEl = document.getElementById('sbRows');
+  if(!url || !key || !table){ rowsEl.textContent = 'URL, key, aur table naam bharein.'; return; }
+  rowsEl.textContent = 'Load ho raha hai...';
+  try{
+    const res = await fetch(`${url}/rest/v1/${table}?select=*&limit=20`, { headers: sbHeaders(key) });
+    const data = await res.json();
+    rowsEl.textContent = JSON.stringify(data, null, 2);
+  }catch(e){
+    rowsEl.textContent = 'Error: ' + e.message;
+  }
+});
+document.getElementById('sbInsertBtn').addEventListener('click', async () => {
+  const url = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('sbKey').value.trim();
+  const table = document.getElementById('sbTable').value.trim();
+  const statusEl = document.getElementById('sbStatus');
+  let payload;
+  try{ payload = JSON.parse(document.getElementById('sbInsertJson').value); }
+  catch(e){ statusEl.className='status-line err'; statusEl.textContent = 'JSON sahi format mein likhein.'; return; }
+  try{
+    const res = await fetch(`${url}/rest/v1/${table}`, {
+      method: 'POST', headers: {...sbHeaders(key), 'Prefer':'return=representation'}, body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if(res.ok){ statusEl.className='status-line ok'; statusEl.textContent = '✅ Row jud gaya.'; }
+    else{ statusEl.className='status-line err'; statusEl.textContent = '❌ ' + (result.message || JSON.stringify(result)); }
+  }catch(e){
+    statusEl.className='status-line err'; statusEl.textContent = '❌ ' + e.message;
+  }
+});
+
+// Page load hote hi UI language ko sahi se sync kar do
+applyUiLanguage();
+
+// ===== PWA: Service worker register karo taaki app install ho sake =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+// ===== PWA: Install button =====
+let deferredInstallPrompt = null;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  installBtn.style.display = 'inline-block';
+});
+installBtn.addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  installBtn.style.display = 'none';
+});
+// ===== Android App tab =====
+document.getElementById('openPwaBuilderBtn').addEventListener('click', () => {
+  const url = document.getElementById('pwaUrlInput').value.trim();
+  if(!url){
+    alert('Pehle apni website ka URL daalein.');
+    return;
+  }
+  window.open('https://www.pwabuilder.com/reportcard?site=' + encodeURIComponent(url), '_blank');
+});
+document.getElementById('openAppInventorBtn').addEventListener('click', () => {
+  window.open('https://appinventor.mit.edu', '_blank');
+});
+
+window.addEventListener('appinstalled', () => {
+  installBtn.style.display = 'none';
+});
 </script>
 
 </body>
