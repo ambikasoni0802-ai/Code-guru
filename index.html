@@ -307,6 +307,9 @@
     width:100%; height:280px; border:1.5px solid var(--sage); border-radius:10px;
     background:#fff; margin-top:10px;
   }
+  #previewFrame:fullscreen{
+    height:100vh; width:100vw; border-radius:0; border:none;
+  }
   .ai-build-row{display:flex; gap:8px; margin-top:10px;}
   .ai-build-row input{
     flex:1; background:var(--board-dark); color:var(--chalk); border:1.5px solid var(--sage);
@@ -459,7 +462,10 @@
   <textarea class="code-input" id="cssCode" rows="4" placeholder="h1{color:red;}"></textarea>
   <div class="code-label">JavaScript</div>
   <textarea class="code-input" id="jsCode" rows="4" placeholder="console.log('hi')"></textarea>
-  <div class="code-label">Live Preview</div>
+  <div class="code-label" style="display:flex; align-items:center; justify-content:space-between;">
+    <span>Live Preview</span>
+    <button id="fullscreenPreviewBtn" title="Fullscreen mein dekhein" style="background:var(--sage); color:var(--chalk); border:none; border-radius:6px; padding:5px 10px; font-size:15px; cursor:pointer;">⛶</button>
+  </div>
   <iframe id="previewFrame"></iframe>
 </div>
 
@@ -1033,6 +1039,19 @@ document.getElementById('runPreviewBtn').addEventListener('click', runPreview);
 document.getElementById('clearEditorBtn').addEventListener('click', () => {
   htmlCode.value = ""; cssCode.value = ""; jsCode.value = "";
   previewFrame.srcdoc = "";
+});
+
+// ===== Editor: Fullscreen preview =====
+document.getElementById('fullscreenPreviewBtn').addEventListener('click', () => {
+  if(previewFrame.requestFullscreen){
+    previewFrame.requestFullscreen();
+  }else if(previewFrame.webkitRequestFullscreen){
+    previewFrame.webkitRequestFullscreen();
+  }else if(previewFrame.msRequestFullscreen){
+    previewFrame.msRequestFullscreen();
+  }else{
+    alert('Aapka browser fullscreen support nahi karta.');
+  }
 });
 
 // ===== Editor: AI se code banwana =====
