@@ -427,6 +427,7 @@
   <button class="maintab-btn" data-panel="deployPanel">🚀 Deploy</button>
   <button class="maintab-btn" data-panel="dbPanel">🗄️ Database</button>
   <button class="maintab-btn" data-panel="androidPanel">📱 Android App</button>
+  <button class="maintab-btn" data-panel="apiPanel">🔑 API</button>
 </div>
 
 <div class="panel active" id="chatPanel" style="flex-direction:column;">
@@ -513,6 +514,31 @@
     <h3>🧩 Naya app blocks se banana ho (bina coding)</h3>
     <p class="hint">Agar coding ke bina, drag-drop se ek alag Android app banana hai (jaise game ya calculator), to <b>MIT App Inventor</b> bhi ek accha, bilkul free, beginner-friendly tool hai.</p>
     <button id="openAppInventorBtn">MIT App Inventor kholein</button>
+  </div>
+</div>
+
+<div class="panel simple-panel" id="apiPanel">
+  <div class="card">
+    <h3>🔑 Apni Code Guru API Key banayein</h3>
+    <p class="hint">Ye key bana lene ke baad, aap seedha Code Guru ke API se apne kisi bhi app/website mein AI jawab mangwa sakte hain — Groq par jaake alag se account banane ki zaroorat nahi.</p>
+    <input id="apiKeyNameInput" placeholder="Aapka naam / app ka naam (optional)">
+    <button id="generateKeyBtn">✨ Meri API Key Banayein</button>
+    <div class="status-line" id="apiKeyStatus"></div>
+  </div>
+
+  <div class="card">
+    <h3>📖 Is API ko kaise use karein</h3>
+    <p class="hint">Apne code mein is tarah call karein (JavaScript example):</p>
+    <pre style="background:var(--board-dark); padding:10px; border-radius:8px; overflow-x:auto; font-size:11.5px; font-family:'Fira Code',monospace; color:var(--chalk);">fetch("<span id="apiEndpointDisplay">https://aapki-site.netlify.app</span>/.netlify/functions/api-chat", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-api-key": "AAPKI_KEY_YAHAN"
+  },
+  body: JSON.stringify({
+    messages: [{ role: "user", content: "Hello!" }]
+  })
+})</pre>
   </div>
 </div>
 
@@ -1206,6 +1232,33 @@ document.getElementById('openPwaBuilderBtn').addEventListener('click', () => {
 });
 document.getElementById('openAppInventorBtn').addEventListener('click', () => {
   window.open('https://appinventor.mit.edu', '_blank');
+});
+
+// ===== API Key generation =====
+document.getElementById('apiEndpointDisplay').textContent = window.location.origin;
+document.getElementById('generateKeyBtn').addEventListener('click', async () => {
+  const name = document.getElementById('apiKeyNameInput').value.trim();
+  const statusEl = document.getElementById('apiKeyStatus');
+  statusEl.className = 'status-line';
+  statusEl.textContent = 'Key ban rahi hai...';
+  try{
+    const res = await fetch('/.netlify/functions/generate-key', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if(res.ok){
+      statusEl.className = 'status-line ok';
+      statusEl.textContent = '✅ Aapki key: ' + data.apiKey + ' (isko kahin safe jagah save kar lein, dobara nahi dikhegi)';
+    }else{
+      statusEl.className = 'status-line err';
+      statusEl.textContent = '❌ ' + (data.error || 'Kuch gadbad ho gayi');
+    }
+  }catch(e){
+    statusEl.className = 'status-line err';
+    statusEl.textContent = '❌ ' + e.message;
+  }
 });
 
 window.addEventListener('appinstalled', () => {
