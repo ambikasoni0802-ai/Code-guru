@@ -879,14 +879,26 @@ let currentT = TRANSLATIONS["Hindi (Hinglish)"];
   let w, h, columns, drops, colWidth;
   const fontSize = 14;
   const snippets = [
-    "def learn(topic):", "for i in range(10):", "if user.ready:",
-    "class CodeGuru:", "function teach(lang) {", "const step = 1;",
-    "print('Hello, World')", "return step + 1;", "import numpy as np",
-    "while True:", "let x = fetch(url);", "console.log(x);",
-    "public static void main", "int main() {", "SELECT * FROM users;",
-    "<div class=\"app\">", "npm install code-guru", "git commit -m 'learn'",
-    "async function run() {", "try { learn(); }", "catch (e) { retry(); }",
-    "export default App;", "self.on('message')", "await api.chat(msg);"
+    "def learn(topic, level='beginner'):", "for i in range(0, len(items), 2):",
+    "if user.ready and not user.blocked:", "class CodeGuru(BaseTeacher):",
+    "function teach(lang, student) {", "const stepCount = steps.length + 1;",
+    "print(f'Hello, {name}! Welcome')", "return step + 1 if valid else -1;",
+    "import numpy as np, pandas as pd", "while queue.length > 0:",
+    "let response = await fetch(apiUrl);", "console.log('Result:', x, y);",
+    "public static void main(String[] args) {", "int main(int argc, char** argv) {",
+    "SELECT id, name FROM users WHERE active = 1;", "<div class=\"app-container\">",
+    "npm install code-guru --save-dev", "git commit -m 'fix: learning bug'",
+    "async function run(config) {", "try { learn(topic); } catch (e) {",
+    "catch (e) { retry(attempt + 1); }", "export default function App() {",
+    "self.addEventListener('message', (e) => {", "const data = await api.chat(msg, ctx);",
+    "for (const [key, value] of Object.entries(obj)) {", "df = pd.read_csv('data.csv')",
+    "if (!token) throw new Error('Unauthorized');", "const result = items.filter(x => x.active);",
+    "@app.route('/api/users', methods=['GET'])", "public class UserController extends Base {",
+    "const [state, setState] = useState(null);", "SELECT COUNT(*) FROM orders GROUP BY status;",
+    "git push origin feature/new-editor", "docker run -p 3000:3000 code-guru:latest",
+    "interface Props { name: string; age: number }", "std::vector<int> nums = {1, 2, 3};",
+    "def fibonacci(n, memo={}):", "with open('file.txt', 'r') as f:",
+    "module.exports = { runPreview, buildApp };", "const arr = Array.from({length: n}, (_, i) => i);"
   ];
   const colors = ["#5eead4", "#fbbf24", "#f472b6", "#a78bfa", "#60a5fa", "#8b93a7"];
 
