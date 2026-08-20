@@ -322,6 +322,9 @@
     width:100%; height:280px; border:1.5px solid var(--sage); border-radius:10px;
     background:#fff; margin-top:10px;
   }
+  #previewTapCatcher{
+    touch-action: manipulation;
+  }
   #previewWrapper.cg-fullscreen{
     position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999;
     background:#fff; margin:0;
@@ -1191,6 +1194,12 @@ previewTapCatcher.addEventListener('dblclick', goFullscreenPreview);
 
 // Mobile touch ke liye manual double-tap detection
 let lastTapTime = 0;
+previewTapCatcher.addEventListener('touchstart', (e) => {
+  const now = Date.now();
+  if(now - lastTapTime < 350){
+    e.preventDefault(); // native double-tap-zoom ko rokte hain
+  }
+}, { passive: false });
 previewTapCatcher.addEventListener('touchend', (e) => {
   const now = Date.now();
   if(now - lastTapTime < 350){
@@ -1205,20 +1214,21 @@ exitFullscreenBtn.addEventListener('click', exitFullscreenPreview);
 // ===== Editor: AI se code banwana =====
 const aiBuildBtn = document.getElementById('aiBuildBtn');
 const aiBuildInput = document.getElementById('aiBuildInput');
+let buildMessages = []; // is tab ki apni conversation memory — follow-up edits ke liye
 
-async function askAiToBuild(promptText){
-  aiBuildBtn.disabled = true;
-  aiBuildBtn.textContent = "⏳ Bana raha hai...";
-  try{
-    const buildSystem = `Tum ek expert full-stack developer ho. User jo bhi app/website banwana chahega, uska poora, kaam karne wala code do.
+const BUILD_SYSTEM = `Tum ek senior full-stack developer ho jo bilkul production-quality, 100% kaam karne wala code likhte ho — koi shortcut nahi, koi adhoora feature nahi.
 
-ZAROORI DESIGN RULES:
-- Layout hamesha mobile screen ko POORI TARAH FILL kare — CSS mein body/html ko 100% height/width do, koi bhi bada empty white space na chhode.
-- Design modern, clean aur mobile-first ho — bade, aasani se dabaye jaane wale buttons, achhi spacing, readable font size.
-- Agar app mein list/cards hain to unhe poori width use karne dena, chhota-sa box beech mein mat chhodo.
-- Flexbox ya Grid use karke content ko center aur achhi tarah se arrange karo.
+SABSE ZAROORI RULES:
+1. User ne jo bhi feature/behaviour maanga hai, wo SABKA SABKA implement karo — koi bhi part chhodo mat, koi "// yahan logic add karo" jaisa placeholder comment kabhi mat likho. Har button, har form, har interaction ka asli JavaScript logic poora likhna hai.
+2. Agar user pehle se bane code mein badlaav maang raha hai, to CURRENT CODE (neeche diya hai) ko base bana kar usi mein sahi jagah edit/add karo — poora dobara mat likho jab tak zaroorat na ho, aur jo pehle sahi chal raha tha use mat todo.
+3. Edge cases handle karo (khaali input, galat input, empty list, etc.) jahan bhi relevant ho.
+4. Real data/state manage karo — agar list/counter/form hai to JavaScript mein asli array/state variables use karo, sirf dikhava mat karo.
 
-Hamesha jawab is exact format mein do — teen alag code blocks mein:
+DESIGN RULES:
+- Layout hamesha mobile screen ko POORI TARAH FILL kare — body/html 100% height/width, koi bada empty white space nahi.
+- Modern, clean, mobile-first design — bade buttons, achhi spacing, readable fonts, Flexbox/Grid se sahi arrangement.
+
+Hamesha jawab is EXACT format mein do — teen code blocks, kuch aur text nahi:
 \`\`\`html
 (sirf body ka HTML content, <html> ya <head> tags mat likho)
 \`\`\`
@@ -1226,20 +1236,34 @@ Hamesha jawab is exact format mein do — teen alag code blocks mein:
 (poora CSS)
 \`\`\`
 \`\`\`javascript
-(poora JavaScript)
+(poora JavaScript, saara logic yahan)
 \`\`\`
-Koi extra explanation mat do, sirf teeno code blocks do. Code clean, modern aur turant chalne layak hona chahiye.`;
+Koi extra explanation mat do, sirf teeno code blocks do.`;
+
+async function askAiToBuild(promptText){
+  aiBuildBtn.disabled = true;
+  aiBuildBtn.textContent = "⏳ Bana raha hai...";
+  try{
+    const currentCodeContext =
+      (htmlCode.value.trim() || cssCode.value.trim() || jsCode.value.trim())
+        ? `CURRENT CODE (isko base bana kar edit karo agar relevant ho):\n\`\`\`html\n${htmlCode.value}\n\`\`\`\n\`\`\`css\n${cssCode.value}\n\`\`\`\n\`\`\`javascript\n${jsCode.value}\n\`\`\`\n\nUSER KI NAYI REQUEST: ${promptText}`
+        : promptText;
+
+    buildMessages.push({ role: 'user', content: currentCodeContext });
+    // Memory bahut lambi na ho jaye isliye sirf last 6 messages rakhte hain
+    if(buildMessages.length > 6) buildMessages = buildMessages.slice(-6);
 
     const response = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        system: buildSystem,
-        messages: [{ role: 'user', content: promptText }]
+        system: BUILD_SYSTEM,
+        messages: buildMessages
       })
     });
     const data = await response.json();
     const replyText = data?.choices?.[0]?.message?.content || "";
+    buildMessages.push({ role: 'assistant', content: replyText });
 
     const htmlMatch = replyText.match(/```html\n([\s\S]*?)```/);
     const cssMatch = replyText.match(/```css\n([\s\S]*?)```/);
@@ -1258,8 +1282,15 @@ Koi extra explanation mat do, sirf teeno code blocks do. Code clean, modern aur 
   }
 }
 aiBuildBtn.addEventListener('click', () => {
-  if(aiBuildInput.value.trim()) askAiToBuild(aiBuildInput.value.trim());
+  if(aiBuildInput.value.trim()){
+    askAiToBuild(aiBuildInput.value.trim());
+    aiBuildInput.value = "";
+  }
 });
+document.getElementById('clearEditorBtn').addEventListener('click', () => {
+  buildMessages = []; // naya app shuru karte waqt purani memory bhi saaf
+});
+
 
 // ===== Deploy: GitHub push =====
 document.getElementById('ghPushBtn').addEventListener('click', async () => {
