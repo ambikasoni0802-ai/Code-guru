@@ -11,23 +11,24 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Code Guru">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Hind:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --board:#1b3a2f;
-    --board-dark:#142e25;
-    --chalk:#f5f3e7;
-    --chalk-dim:#cdd6cc;
-    --yellow:#e8c547;
-    --coral:#d8737f;
-    --sage:#4a6b5c;
-    --wood:#6b4226;
-    --wood-dark:#4e3019;
+    --board:#0b0f19;
+    --board-dark:#070a12;
+    --chalk:#e7ebf5;
+    --chalk-dim:#8b93a7;
+    --yellow:#fbbf24;
+    --coral:#f472b6;
+    --sage:#243044;
+    --wood:#161d2e;
+    --wood-dark:#0d1220;
+    --cyan:#5eead4;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;margin:0;}
   body{
-    font-family:'Hind',sans-serif;
+    font-family:'Inter',sans-serif;
     background:
       radial-gradient(ellipse at top left, rgba(255,255,255,0.03), transparent 60%),
       var(--board);
@@ -37,17 +38,28 @@
     min-height:100vh;
     overflow-x:hidden;
   }
-  /* chalk dust texture */
+  /* modern circuit-grid texture */
   body::before{
     content:"";
     position:fixed;inset:0;
     pointer-events:none;
     background-image:
-      radial-gradient(rgba(245,243,231,0.035) 1px, transparent 1px),
-      radial-gradient(rgba(245,243,231,0.025) 1px, transparent 1px);
-    background-size:60px 60px, 37px 37px;
-    background-position:0 0, 15px 20px;
+      linear-gradient(rgba(94,234,212,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(94,234,212,0.05) 1px, transparent 1px);
+    background-size:42px 42px;
     z-index:0;
+  }
+
+  #codeCanvas{
+    position:fixed; inset:0;
+    z-index:-2;
+    opacity:0.65;
+  }
+  #bgVideoOverlay{
+    position:fixed; inset:0;
+    background:radial-gradient(ellipse at 50% 0%, rgba(11,15,25,0.4), rgba(7,10,18,0.88));
+    z-index:-1;
+    pointer-events:none;
   }
 
   header{
@@ -58,7 +70,7 @@
     border-bottom:3px solid var(--wood-dark);
   }
   header h1{
-    font-family:'Baloo 2',cursive;
+    font-family:'Space Grotesk',sans-serif;
     font-weight:800;
     font-size:clamp(26px,5vw,38px);
     margin:0 0 4px;
@@ -79,7 +91,7 @@
   }
 
   #langSelect{
-    font-family:'Hind',sans-serif;
+    font-family:'Inter',sans-serif;
     font-size:13.5px;
     font-weight:500;
     background:var(--board-dark);
@@ -96,8 +108,10 @@
   .tray{
     position:relative;
     z-index:1;
-    background:linear-gradient(180deg,var(--wood),var(--wood-dark));
-    border-top:2px solid #3a2312;
+    background:rgba(255,255,255,0.03);
+    backdrop-filter:blur(10px);
+    border-top:1px solid rgba(94,234,212,0.15);
+    border-bottom:1px solid rgba(94,234,212,0.15);
     padding:12px 14px;
     display:flex;
     gap:9px;
@@ -105,26 +119,26 @@
     scrollbar-width:thin;
   }
   .tray::-webkit-scrollbar{height:5px;}
-  .tray::-webkit-scrollbar-thumb{background:#3a2312;border-radius:4px;}
+  .tray::-webkit-scrollbar-thumb{background:rgba(94,234,212,0.3);border-radius:4px;}
   .chalk-chip{
     flex:0 0 auto;
-    font-family:'Fira Code',monospace;
+    font-family:'JetBrains Mono',monospace;
     font-size:12.5px;
     font-weight:500;
     padding:8px 14px;
-    border-radius:14px 14px 14px 3px;
+    border-radius:8px;
     border:none;
     cursor:pointer;
-    color:#1b3a2f;
-    box-shadow:0 2px 0 rgba(0,0,0,0.25), inset 0 -2px 4px rgba(0,0,0,0.08);
+    color:#0b0f19;
+    box-shadow:0 2px 8px rgba(0,0,0,0.35);
     transition:transform 0.12s ease;
     white-space:nowrap;
   }
   .chalk-chip:hover{transform:translateY(-2px);}
   .chalk-chip:active{transform:translateY(0px);}
-  .c1{background:#f5f3e7;} .c2{background:#e8c547;}
-  .c3{background:#d8737f;color:#3a1015;} .c4{background:#8fb9a8;}
-  .c5{background:#a7c4e8;} .c6{background:#e8a75c;}
+  .c1{background:#5eead4;} .c2{background:#fbbf24;}
+  .c3{background:#f472b6;color:#2a0f1e;} .c4{background:#a78bfa;}
+  .c5{background:#60a5fa;} .c6{background:#34d399;}
 
   main{
     flex:1;
@@ -166,7 +180,7 @@
   }
   .msg.ai .label, .msg.user .label{
     display:block;
-    font-family:'Baloo 2',cursive;
+    font-family:'Space Grotesk',sans-serif;
     font-size:11.5px;
     letter-spacing:1px;
     text-transform:uppercase;
@@ -182,7 +196,7 @@
     margin:10px 0;
   }
   .msg code{
-    font-family:'Fira Code',monospace;
+    font-family:'JetBrains Mono',monospace;
     font-size:13px;
     color:#e8c547;
   }
@@ -204,7 +218,7 @@
     border-radius:12px;
     margin-top:8px;
   }
-  .welcome b{color:var(--yellow);font-family:'Baloo 2',cursive;}
+  .welcome b{color:var(--yellow);font-family:'Space Grotesk',sans-serif;}
 
   .typing{
     align-self:flex-start;
@@ -224,11 +238,12 @@
   footer{
     position:relative;
     z-index:1;
-    background:linear-gradient(180deg,var(--wood),var(--wood-dark));
+    background:rgba(255,255,255,0.03);
+    backdrop-filter:blur(10px);
     padding:12px 14px calc(12px + env(safe-area-inset-bottom));
     display:flex;
     gap:10px;
-    border-top:2px solid #3a2312;
+    border-top:1px solid rgba(94,234,212,0.15);
   }
   #userInput{
     flex:1;
@@ -237,7 +252,7 @@
     border-radius:10px;
     padding:12px 14px;
     color:var(--chalk);
-    font-family:'Hind',sans-serif;
+    font-family:'Inter',sans-serif;
     font-size:15px;
     resize:none;
     outline:none;
@@ -245,18 +260,18 @@
   #userInput:focus{border-color:var(--yellow);}
   #userInput::placeholder{color:var(--chalk-dim);opacity:0.6;}
   #sendBtn{
-    font-family:'Baloo 2',cursive;
+    font-family:'Space Grotesk',sans-serif;
     font-weight:700;
     background:var(--yellow);
-    color:#3a2312;
+    color:#0b0f19;
     border:none;
     border-radius:10px;
     padding:0 20px;
     cursor:pointer;
     font-size:15px;
-    box-shadow:0 2px 0 #a37f1e;
+    box-shadow:0 2px 12px rgba(251,191,36,0.35);
   }
-  #sendBtn:active{transform:translateY(1px);box-shadow:0 1px 0 #a37f1e;}
+  #sendBtn:active{transform:translateY(1px);box-shadow:0 1px 8px rgba(251,191,36,0.35);}
   #sendBtn:disabled{opacity:0.5;cursor:not-allowed;}
 
   /* ===== Main Tabs ===== */
@@ -274,7 +289,7 @@
     background:none;
     border:none;
     color:var(--chalk-dim);
-    font-family:'Hind',sans-serif;
+    font-family:'Inter',sans-serif;
     font-weight:600;
     font-size:12.5px;
     padding:11px 6px;
@@ -294,12 +309,12 @@
   .editor-mode-row{display:flex; gap:8px; margin-bottom:6px; flex-wrap:wrap;}
   .editor-mode-row button{
     background:var(--sage); color:var(--chalk); border:none; border-radius:8px;
-    padding:9px 14px; font-family:'Hind',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+    padding:9px 14px; font-family:'Inter',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
   }
-  .code-label{font-family:'Fira Code',monospace; font-size:12px; color:var(--yellow); margin:8px 0 4px;}
+  .code-label{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--yellow); margin:8px 0 4px;}
   .code-input{
     width:100%; min-height:90px; background:var(--board-dark); color:var(--chalk);
-    border:1.5px solid var(--sage); border-radius:8px; padding:10px; font-family:'Fira Code',monospace;
+    border:1.5px solid var(--sage); border-radius:8px; padding:10px; font-family:'JetBrains Mono',monospace;
     font-size:12.5px; resize:vertical;
   }
   .code-input:focus{border-color:var(--yellow); outline:none;}
@@ -328,11 +343,11 @@
   .ai-build-row{display:flex; gap:8px; margin-top:10px;}
   .ai-build-row input{
     flex:1; background:var(--board-dark); color:var(--chalk); border:1.5px solid var(--sage);
-    border-radius:8px; padding:10px; font-family:'Hind',sans-serif; font-size:13.5px;
+    border-radius:8px; padding:10px; font-family:'Inter',sans-serif; font-size:13.5px;
   }
   .ai-build-row button{
     background:var(--yellow); color:var(--wood-dark); border:none; border-radius:8px;
-    padding:0 16px; font-family:'Baloo 2',cursive; font-weight:700; cursor:pointer;
+    padding:0 16px; font-family:'Space Grotesk',sans-serif; font-weight:700; cursor:pointer;
   }
 
   /* ===== Deploy & Database panels ===== */
@@ -341,20 +356,55 @@
     background:rgba(245,243,231,0.05); border:1.5px solid var(--sage); border-radius:12px;
     padding:14px; margin-bottom:16px;
   }
-  .card h3{font-family:'Baloo 2',cursive; margin:0 0 8px; font-size:16px; color:var(--yellow);}
+  .card h3{font-family:'Space Grotesk',sans-serif; margin:0 0 8px; font-size:16px; color:var(--yellow);}
   .card p.hint{font-size:12px; color:var(--chalk-dim); margin:0 0 10px;}
   .card input, .card textarea{
     width:100%; background:var(--board-dark); color:var(--chalk); border:1.5px solid var(--sage);
-    border-radius:8px; padding:9px 11px; font-family:'Hind',sans-serif; font-size:13.5px; margin-bottom:8px;
+    border-radius:8px; padding:9px 11px; font-family:'Inter',sans-serif; font-size:13.5px; margin-bottom:8px;
   }
   .card button{
     background:var(--yellow); color:var(--wood-dark); border:none; border-radius:8px;
-    padding:10px 16px; font-family:'Baloo 2',cursive; font-weight:700; cursor:pointer; font-size:13.5px;
+    padding:10px 16px; font-family:'Space Grotesk',sans-serif; font-weight:700; cursor:pointer; font-size:13.5px;
   }
-  .status-line{font-size:12.5px; margin-top:8px; font-family:'Fira Code',monospace; word-break:break-all;}
+  .status-line{font-size:12.5px; margin-top:8px; font-family:'JetBrains Mono',monospace; word-break:break-all;}
   .status-line.ok{color:#8fb9a8;}
   .status-line.err{color:var(--coral);}
-  .db-rows{margin-top:10px; font-family:'Fira Code',monospace; font-size:12px; background:var(--board-dark); border-radius:8px; padding:8px; max-height:180px; overflow-y:auto; white-space:pre-wrap;}
+  .db-rows{margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--board-dark); border-radius:8px; padding:8px; max-height:180px; overflow-y:auto; white-space:pre-wrap;}
+
+  /* ===== Demo Ad Overlay ===== */
+  #adOverlay{
+    display:none;
+    position:fixed; inset:0; z-index:99999;
+    background:rgba(0,0,0,0.92);
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  #adOverlay.show{ display:flex; }
+  .ad-badge{
+    position:absolute; top:16px; left:16px;
+    background:rgba(255,255,255,0.15); color:#fff; font-size:11px;
+    padding:4px 10px; border-radius:12px; font-family:'Inter',sans-serif;
+  }
+  .ad-box{
+    width:100%; max-width:340px; aspect-ratio:4/3;
+    background:linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border:1.5px dashed rgba(255,255,255,0.25);
+    border-radius:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:rgba(255,255,255,0.6);
+    font-family:'Inter',sans-serif; text-align:center; gap:8px; padding:20px;
+  }
+  .ad-box .ad-icon{ font-size:40px; }
+  .ad-box h4{ color:#fff; margin:0; font-family:'Space Grotesk',sans-serif; font-size:18px;}
+  .ad-timer-row{
+    margin-top:18px; display:flex; align-items:center; gap:12px;
+  }
+  #adCountdownText{ color:rgba(255,255,255,0.7); font-family:'JetBrains Mono',monospace; font-size:13px; }
+  #skipAdBtn{
+    display:none;
+    background:var(--yellow); color:var(--wood-dark); border:none; border-radius:8px;
+    padding:9px 18px; font-family:'Space Grotesk',sans-serif; font-weight:700; cursor:pointer; font-size:13.5px;
+  }
 
   #micBtn{
     background:var(--sage);
@@ -365,9 +415,9 @@
     flex:0 0 46px;
     cursor:pointer;
     font-size:19px;
-    box-shadow:0 2px 0 #35503f;
+    box-shadow:0 2px 10px rgba(94,234,212,0.25);
   }
-  #micBtn:active{transform:translateY(1px);box-shadow:0 1px 0 #35503f;}
+  #micBtn:active{transform:translateY(1px);box-shadow:0 1px 6px rgba(94,234,212,0.25);}
   #micBtn.listening{
     background:var(--coral);
     box-shadow:0 2px 0 #a04a55;
@@ -385,7 +435,7 @@
     border-radius:12px;
     padding:3px 10px;
     font-size:11.5px;
-    font-family:'Hind',sans-serif;
+    font-family:'Inter',sans-serif;
     cursor:pointer;
     margin-top:8px;
   }
@@ -399,8 +449,11 @@
 </head>
 <body>
 
+<canvas id="codeCanvas"></canvas>
+<div id="bgVideoOverlay"></div>
+
 <header>
-  <h1>Code Guru 🖊️</h1>
+  <h1>Code Guru <span style="color:var(--cyan);">&lt;/&gt;</span></h1>
   <div class="underline"></div>
   <p id="tagline">Har coding language, ek dum simple bhasha mein, step-by-step</p>
   <select id="langSelect">
@@ -425,7 +478,7 @@
     <option value="Portuguese" data-locale="pt-BR">🇧🇷 Portuguese</option>
   </select>
   <br>
-  <button id="installBtn" style="display:none; background:var(--yellow); color:var(--wood-dark); border:none; border-radius:20px; padding:8px 16px; font-family:'Baloo 2',cursive; font-weight:700; font-size:13px; cursor:pointer; margin-bottom:10px;">📲 App Install Karein</button>
+  <button id="installBtn" style="display:none; background:var(--yellow); color:var(--wood-dark); border:none; border-radius:20px; padding:8px 16px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; cursor:pointer; margin-bottom:10px;">📲 App Install Karein</button>
 </header>
 
 <div class="tray" id="tray">
@@ -551,7 +604,7 @@
   <div class="card">
     <h3>📖 Is API ko kaise use karein</h3>
     <p class="hint">Apne code mein is tarah call karein (JavaScript example):</p>
-    <pre style="background:var(--board-dark); padding:10px; border-radius:8px; overflow-x:auto; font-size:11.5px; font-family:'Fira Code',monospace; color:var(--chalk);">fetch("<span id="apiEndpointDisplay">https://aapki-site.netlify.app</span>/.netlify/functions/api-chat", {
+    <pre style="background:var(--board-dark); padding:10px; border-radius:8px; overflow-x:auto; font-size:11.5px; font-family:'JetBrains Mono',monospace; color:var(--chalk);">fetch("<span id="apiEndpointDisplay">https://aapki-site.netlify.app</span>/.netlify/functions/api-chat", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -815,6 +868,64 @@ const TRANSLATIONS = {
 };
 
 let currentT = TRANSLATIONS["Hindi (Hinglish)"];
+
+// ===== Signature background: live scrolling syntax-highlighted code =====
+(function(){
+  const canvas = document.getElementById('codeCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, columns, drops, colWidth;
+  const fontSize = 14;
+  const snippets = [
+    "def learn(topic):", "for i in range(10):", "if user.ready:",
+    "class CodeGuru:", "function teach(lang) {", "const step = 1;",
+    "print('Hello, World')", "return step + 1;", "import numpy as np",
+    "while True:", "let x = fetch(url);", "console.log(x);",
+    "public static void main", "int main() {", "SELECT * FROM users;",
+    "<div class=\"app\">", "npm install code-guru", "git commit -m 'learn'",
+    "async function run() {", "try { learn(); }", "catch (e) { retry(); }",
+    "export default App;", "self.on('message')", "await api.chat(msg);"
+  ];
+  const colors = ["#5eead4", "#fbbf24", "#f472b6", "#a78bfa", "#60a5fa", "#8b93a7"];
+
+  function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    colWidth = 78;
+    columns = Math.ceil(w / colWidth);
+    drops = Array.from({length: columns}, () => ({
+      y: Math.random() * -h,
+      text: snippets[Math.floor(Math.random()*snippets.length)],
+      text2: snippets[Math.floor(Math.random()*snippets.length)],
+      color: colors[Math.floor(Math.random()*colors.length)],
+      speed: 1.1 + Math.random()*1.2
+    }));
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function draw(){
+    ctx.fillStyle = "rgba(7,10,18,0.14)";
+    ctx.fillRect(0,0,w,h);
+    ctx.font = fontSize + "px 'JetBrains Mono', monospace";
+    drops.forEach((d, i) => {
+      ctx.fillStyle = d.color;
+      ctx.globalAlpha = 0.6;
+      ctx.fillText(d.text, i*colWidth + 6, d.y);
+      ctx.globalAlpha = 0.3;
+      ctx.fillText(d.text2, i*colWidth + 6, d.y - 40);
+      d.y += d.speed * 2.2;
+      if(d.y > h + 20){
+        d.y = Math.random() * -100;
+        d.text = snippets[Math.floor(Math.random()*snippets.length)];
+        d.text2 = snippets[Math.floor(Math.random()*snippets.length)];
+        d.color = colors[Math.floor(Math.random()*colors.length)];
+      }
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 
 function applyUiLanguage(){
   const langName = getSelectedLangName();
@@ -1327,7 +1438,48 @@ document.getElementById('generateKeyBtn').addEventListener('click', async () => 
 window.addEventListener('appinstalled', () => {
   installBtn.style.display = 'none';
 });
+
+// ===== Demo Ad System (har 10 minute mein) =====
+const AD_INTERVAL_MS = 10 * 60 * 1000; // 10 minute
+const adOverlay = document.getElementById('adOverlay');
+const skipAdBtn = document.getElementById('skipAdBtn');
+const adCountdownText = document.getElementById('adCountdownText');
+
+function showDemoAd(){
+  adOverlay.classList.add('show');
+  skipAdBtn.style.display = 'none';
+  let secondsLeft = 5;
+  adCountdownText.textContent = secondsLeft + ' second mein Skip ho sakega...';
+  const countdown = setInterval(() => {
+    secondsLeft--;
+    if(secondsLeft <= 0){
+      clearInterval(countdown);
+      adCountdownText.textContent = '';
+      skipAdBtn.style.display = 'inline-block';
+    }else{
+      adCountdownText.textContent = secondsLeft + ' second mein Skip ho sakega...';
+    }
+  }, 1000);
+}
+function hideDemoAd(){
+  adOverlay.classList.remove('show');
+}
+skipAdBtn.addEventListener('click', hideDemoAd);
+setInterval(showDemoAd, AD_INTERVAL_MS);
 </script>
+
+<div id="adOverlay">
+  <span class="ad-badge">Advertisement (Demo)</span>
+  <div class="ad-box">
+    <div class="ad-icon">📢</div>
+    <h4>Ye ek Demo Ad hai</h4>
+    <p style="margin:0; font-size:13px;">Real ads ke liye AdSense approval chahiye hoga. Ye sirf ek placeholder hai.</p>
+  </div>
+  <div class="ad-timer-row">
+    <span id="adCountdownText">5 second mein Skip ho sakega...</span>
+    <button id="skipAdBtn">Skip Ad ✕</button>
+  </div>
+</div>
 
 </body>
 </html>
