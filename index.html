@@ -528,6 +528,14 @@
     <button id="aiBuildBtn">✨ AI se banwao</button>
   </div>
   <p class="hint" id="savedKeyHint" style="margin:6px 0 0; font-size:11.5px;"></p>
+  <div id="apiKeyPromptBox" style="display:none; background:rgba(251,191,36,0.08); border:1.5px solid var(--yellow); border-radius:10px; padding:12px; margin-top:8px;">
+    <p style="margin:0 0 8px; font-size:12.5px;">🔑 Ye app AI feature use karega — apni Code Guru API key daalein (nahi hai to 🔑 API tab se pehle bana lein):</p>
+    <input id="apiKeyPromptInput" placeholder="cg_..." style="width:100%; background:var(--board-dark); color:var(--chalk); border:1.5px solid var(--sage); border-radius:8px; padding:9px 11px; font-family:'JetBrains Mono',monospace; font-size:13px; margin-bottom:8px;">
+    <div style="display:flex; gap:8px;">
+      <button id="apiKeyConfirmBtn" style="flex:1; background:var(--yellow); color:#0b0f19; border:none; border-radius:8px; padding:9px; font-family:'Space Grotesk',sans-serif; font-weight:700; cursor:pointer;">Confirm &amp; Banwao</button>
+      <button id="apiKeyCancelBtn" style="background:var(--sage); color:var(--chalk); border:none; border-radius:8px; padding:9px 14px; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
   <div class="code-label">HTML</div>
   <textarea class="code-input" id="htmlCode" rows="4" placeholder="&lt;h1&gt;Hello&lt;/h1&gt;"></textarea>
   <div class="code-label">CSS</div>
@@ -1074,7 +1082,8 @@ async function sendMessage(text){
         messages: messages
       })
     });
-    const data = await response.json();
+    let data = {};
+    try{ data = await response.json(); }catch(parseErr){ data = {}; }
     removeTyping();
     let replyText = "";
     if(data && data.choices && data.choices[0] && data.choices[0].message){
@@ -1297,8 +1306,14 @@ async function askAiToBuild(promptText){
         messages: buildMessages
       })
     });
-    const data = await response.json();
+    let data = {};
+    try{ data = await response.json(); }catch(parseErr){ data = {}; }
     const replyText = data?.choices?.[0]?.message?.content || "";
+    if(!replyText){
+      buildMessages.pop(); // failed attempt ko memory se hata do
+      alert("AI se jawab nahi mila (shayad request bahut bada tha ya time out ho gaya). Chhota/simple request try karein.");
+      return;
+    }
     buildMessages.push({ role: 'assistant', content: replyText });
 
     const htmlMatch = replyText.match(/```html\n([\s\S]*?)```/);
@@ -1328,12 +1343,43 @@ async function askAiToBuild(promptText){
     aiBuildBtn.textContent = "✨ AI se banwao";
   }
 }
+const AI_RELATED_PATTERN = /\b(ai\b|a\.i\.|chatbot|chat[\s-]?bot|assistant|smart\s*reply|jawab\s*de|nlp|gpt|voice\s*assistant|intelligent)\b/i;
+const apiKeyPromptBox = document.getElementById('apiKeyPromptBox');
+const apiKeyPromptInput = document.getElementById('apiKeyPromptInput');
+let pendingBuildPrompt = "";
+
 aiBuildBtn.addEventListener('click', () => {
-  if(aiBuildInput.value.trim()){
-    askAiToBuild(aiBuildInput.value.trim());
-    aiBuildInput.value = "";
+  const promptText = aiBuildInput.value.trim();
+  if(!promptText) return;
+
+  if(AI_RELATED_PATTERN.test(promptText)){
+    pendingBuildPrompt = promptText;
+    apiKeyPromptInput.value = localStorage.getItem('cg_api_key') || "";
+    apiKeyPromptBox.style.display = 'block';
+    return; // Confirm dabane tak build shuru nahi hoga
   }
+
+  askAiToBuild(promptText);
+  aiBuildInput.value = "";
 });
+
+document.getElementById('apiKeyConfirmBtn').addEventListener('click', () => {
+  const key = apiKeyPromptInput.value.trim();
+  if(key){
+    localStorage.setItem('cg_api_key', key);
+    updateSavedKeyHint();
+  }
+  apiKeyPromptBox.style.display = 'none';
+  askAiToBuild(pendingBuildPrompt);
+  aiBuildInput.value = "";
+  pendingBuildPrompt = "";
+});
+
+document.getElementById('apiKeyCancelBtn').addEventListener('click', () => {
+  apiKeyPromptBox.style.display = 'none';
+  pendingBuildPrompt = "";
+});
+
 document.getElementById('clearEditorBtn').addEventListener('click', () => {
   buildMessages = []; // naya app shuru karte waqt purani memory bhi saaf
 });
