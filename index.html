@@ -527,6 +527,7 @@
     <input id="aiBuildInput" placeholder="AI se kya banwana hai? (jaise: ek to-do list app)">
     <button id="aiBuildBtn">✨ AI se banwao</button>
   </div>
+  <p class="hint" id="savedKeyHint" style="margin:6px 0 0; font-size:11.5px;"></p>
   <div class="code-label">HTML</div>
   <textarea class="code-input" id="htmlCode" rows="4" placeholder="&lt;h1&gt;Hello&lt;/h1&gt;"></textarea>
   <div class="code-label">CSS</div>
@@ -1173,6 +1174,16 @@ const cssCode = document.getElementById('cssCode');
 const jsCode = document.getElementById('jsCode');
 const previewFrame = document.getElementById('previewFrame');
 
+function updateSavedKeyHint(){
+  const hintEl = document.getElementById('savedKeyHint');
+  if(!hintEl) return;
+  const savedKey = localStorage.getItem('cg_api_key');
+  hintEl.textContent = savedKey
+    ? '✅ Aapki saved API key mil gayi — AI-feature wale app apne aap isse use karenge.'
+    : '⚠️ Abhi koi API key save nahi hai — agar AI-feature wala app banwayenge to pehle 🔑 API tab se key bana lein.';
+}
+updateSavedKeyHint();
+
 function runPreview(){
   const doc = `<!DOCTYPE html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -1240,6 +1251,19 @@ DESIGN RULES:
 - Layout hamesha mobile screen ko POORI TARAH FILL kare — body/html 100% height/width, koi bada empty white space nahi.
 - Modern, clean, mobile-first design — bade buttons, achhi spacing, readable fonts, Flexbox/Grid se sahi arrangement.
 
+AGAR APP MEIN AI/CHATBOT FEATURE CHAHIYE:
+Agar user ne kisi bhi tarah ka AI, chatbot, ya "smart" jawab dene wala feature manga hai, to Code Guru ke apne API se connect karo — koi dummy/fake jawab kabhi mat do. JavaScript mein bilkul is pattern se likho:
+\`\`\`
+fetch("CG_API_ORIGIN/.netlify/functions/api-chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "x-api-key": "CG_API_KEY_PLACEHOLDER" },
+  body: JSON.stringify({ messages: [{ role: "user", content: userMessage }] })
+})
+.then(r => r.json())
+.then(data => { const reply = data?.choices?.[0]?.message?.content || "Jawab nahi mila."; /* reply ko UI mein dikhao */ });
+\`\`\`
+"CG_API_ORIGIN" aur "CG_API_KEY_PLACEHOLDER" ko bilkul waise hi (exact) likhna — inko badalna nahi, ye automatically real values se replace ho jayenge.
+
 Hamesha jawab is EXACT format mein do — teen code blocks, kuch aur text nahi:
 \`\`\`html
 (sirf body ka HTML content, <html> ya <head> tags mat likho)
@@ -1284,6 +1308,17 @@ async function askAiToBuild(promptText){
     if(htmlMatch) htmlCode.value = htmlMatch[1].trim();
     if(cssMatch) cssCode.value = cssMatch[1].trim();
     if(jsMatch) jsCode.value = jsMatch[1].trim();
+
+    // Agar AI ne AI-feature ke liye placeholder use kiya hai, to asli key/origin daal do
+    if(jsCode.value.includes('CG_API_KEY_PLACEHOLDER') || jsCode.value.includes('CG_API_ORIGIN')){
+      const savedKey = localStorage.getItem('cg_api_key');
+      jsCode.value = jsCode.value
+        .replaceAll('CG_API_ORIGIN', window.location.origin)
+        .replaceAll('CG_API_KEY_PLACEHOLDER', savedKey || 'APNI_KEY_YAHAN_🔑API_TAB_SE_BANAYEIN');
+      if(!savedKey){
+        alert('Is app mein AI feature hai, lekin abhi tak aapki API key save nahi hai. 🔑 API tab mein jaake pehle apni key banayein, phir wapas yahan try karein.');
+      }
+    }
 
     runPreview();
   }catch(e){
@@ -1468,6 +1503,8 @@ document.getElementById('generateKeyBtn').addEventListener('click', async () => 
     if(res.ok){
       statusEl.className = 'status-line ok';
       statusEl.textContent = '✅ Aapki key: ' + data.apiKey + ' (isko kahin safe jagah save kar lein, dobara nahi dikhegi)';
+      localStorage.setItem('cg_api_key', data.apiKey);
+      updateSavedKeyHint();
     }else{
       statusEl.className = 'status-line err';
       statusEl.textContent = '❌ ' + (data.error || 'Kuch gadbad ho gayi');
