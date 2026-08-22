@@ -482,6 +482,7 @@
   </select>
   <br>
   <button id="installBtn" style="display:none; background:var(--yellow); color:var(--wood-dark); border:none; border-radius:20px; padding:8px 16px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; cursor:pointer; margin-bottom:10px;">📲 App Install Karein</button>
+  <div id="streakBadge" style="display:inline-block; background:rgba(251,191,36,0.12); border:1px solid var(--yellow); border-radius:16px; padding:5px 14px; font-size:12.5px; margin-bottom:10px;"></div>
 </header>
 
 <div class="tray" id="tray">
@@ -502,6 +503,7 @@
   <button class="maintab-btn" data-panel="dbPanel">🗄️ Database</button>
   <button class="maintab-btn" data-panel="androidPanel">📱 Android App</button>
   <button class="maintab-btn" data-panel="apiPanel">🔑 API</button>
+  <button class="maintab-btn" data-panel="communityPanel">🌍 Community</button>
 </div>
 
 <div class="panel active" id="chatPanel" style="flex-direction:column;">
@@ -522,6 +524,17 @@
   <div class="editor-mode-row">
     <button id="runPreviewBtn">▶️ Preview chalayein</button>
     <button id="clearEditorBtn">🗑️ Saaf karein</button>
+  </div>
+  <div class="editor-mode-row">
+    <select id="templateSelect" style="flex:1; background:var(--board-dark); color:var(--chalk); border:1.5px solid var(--sage); border-radius:8px; padding:9px; font-family:'Inter',sans-serif; font-size:13px;">
+      <option value="">🎨 Ready-made Template chunein...</option>
+      <option value="todo">✅ To-Do List</option>
+      <option value="calculator">🔢 Calculator</option>
+      <option value="quiz">❓ Quiz App</option>
+      <option value="counter">➕ Counter</option>
+      <option value="clock">🕐 Digital Clock</option>
+      <option value="form">📝 Contact Form</option>
+    </select>
   </div>
   <div class="ai-build-row">
     <input id="aiBuildInput" placeholder="AI se kya banwana hai? (jaise: ek to-do list app)">
@@ -548,6 +561,13 @@
     <div id="previewTapCatcher" style="position:absolute; inset:0; z-index:2;"></div>
     <button id="exitFullscreenBtn">✕</button>
   </div>
+  <div class="editor-mode-row" style="margin-top:10px; flex-wrap:wrap;">
+    <button id="downloadCodeBtn">📥 Download Karein</button>
+    <button id="fixErrorBtn">🐛 Error Fix Karo</button>
+    <button id="shareAppBtn">📤 Share Karo</button>
+    <button id="publishCommunityBtn">🌍 Community Mein Publish Karein</button>
+  </div>
+  <p class="hint" id="errorFixStatus" style="margin-top:6px;"></p>
 </div>
 
 <div class="panel simple-panel" id="deployPanel">
@@ -640,6 +660,15 @@
     messages: [{ role: "user", content: "Hello!" }]
   })
 })</pre>
+  </div>
+</div>
+
+<div class="panel simple-panel" id="communityPanel">
+  <div class="card">
+    <h3>🌍 Community Gallery</h3>
+    <p class="hint">Dusre logon ne jo apps banayi aur publish ki hain, unhe dekhein aur Editor mein load karke seekhein.</p>
+    <button id="refreshCommunityBtn">🔄 Refresh Karein</button>
+    <div id="communityList" style="margin-top:12px;"></div>
   </div>
 </div>
 
@@ -1227,7 +1256,12 @@ function runPreview(){
   * { box-sizing: border-box; }
   ${cssCode.value}
 </style>
-</head><body>${htmlCode.value}<script>${jsCode.value}<\/script></body></html>`;
+</head><body>${htmlCode.value}<script>
+window.onerror = function(msg, url, line){
+  parent.postMessage({ cgError: msg + ' (line ' + line + ')' }, '*');
+};
+${jsCode.value}
+<\/script></body></html>`;
   previewFrame.srcdoc = doc;
 }
 document.getElementById('runPreviewBtn').addEventListener('click', runPreview);
@@ -1373,6 +1407,8 @@ const apiKeyPromptBox = document.getElementById('apiKeyPromptBox');
 const apiKeyPromptInput = document.getElementById('apiKeyPromptInput');
 let pendingBuildPrompt = "";
 
+// ===== Free plan: din mein sirf 3 AI-build, uske baad ₹500/mahina premium =====
+// ⚠️ SITE OWNER: Razorpay account banne ke baad, yahan apna Payment Link daalein
 aiBuildBtn.addEventListener('click', () => {
   const promptText = aiBuildInput.value.trim();
   if(!promptText) return;
@@ -1593,6 +1629,177 @@ document.getElementById('sbInsertBtn').addEventListener('click', async () => {
 
 // Page load hote hi UI language ko sahi se sync kar do
 applyUiLanguage();
+// ===== Templates Gallery =====
+const TEMPLATES = {
+  todo: {
+    html: `<div class="app"><h1>To-Do List</h1><div class="add-row"><input id="taskInput" placeholder="Naya kaam likhein..."><button onclick="addTask()">Add</button></div><ul id="taskList"></ul></div>`,
+    css: `body{margin:0;font-family:sans-serif;background:#1b1b2f;color:#fff;min-height:100vh}.app{max-width:420px;margin:0 auto;padding:20px}h1{text-align:center}.add-row{display:flex;gap:8px;margin-bottom:16px}.add-row input{flex:1;padding:10px;border-radius:8px;border:none}.add-row button{padding:10px 16px;border:none;border-radius:8px;background:#ffb703;font-weight:bold}ul{list-style:none;padding:0}li{background:#2b2b45;padding:12px;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between}li.done span{text-decoration:line-through;opacity:0.5}li span{cursor:pointer}li button{background:none;border:none;color:#ff6b6b;font-size:16px;cursor:pointer}`,
+    js: `let tasks=[];function addTask(){const input=document.getElementById('taskInput');if(!input.value.trim())return;tasks.push({text:input.value.trim(),done:false});input.value='';render();}function toggle(i){tasks[i].done=!tasks[i].done;render();}function del(i){tasks.splice(i,1);render();}function render(){const list=document.getElementById('taskList');list.innerHTML=tasks.map((t,i)=>\`<li class="\${t.done?'done':''}"><span onclick="toggle(\${i})">\${t.text}</span><button onclick="del(\${i})">✕</button></li>\`).join('');}`
+  },
+  calculator: {
+    html: `<div class="calc"><input id="display" readonly><div class="keys">${['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'].map(k=>`<button onclick="press('${k}')">${k}</button>`).join('')}<button onclick="clearDisplay()" class="clear">C</button></div></div>`,
+    css: `body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#0f172a}.calc{background:#1e293b;padding:16px;border-radius:16px;width:280px}#display{width:100%;box-sizing:border-box;font-size:28px;padding:14px;border-radius:10px;border:none;margin-bottom:10px;text-align:right}.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.keys button{padding:16px 0;font-size:18px;border:none;border-radius:8px;background:#334155;color:#fff}.clear{grid-column:span 4;background:#ef4444!important}`,
+    js: `function press(k){const d=document.getElementById('display');if(k==='='){try{d.value=eval(d.value);}catch(e){d.value='Error';}}else{d.value+=k;}}function clearDisplay(){document.getElementById('display').value='';}`
+  },
+  quiz: {
+    html: `<div class="quiz"><h2 id="qText"></h2><div id="options"></div><p id="score"></p></div>`,
+    css: `body{margin:0;font-family:sans-serif;background:#082f49;color:#fff;display:flex;justify-content:center;min-height:100vh}.quiz{max-width:420px;padding:20px;width:100%}#options button{display:block;width:100%;margin:8px 0;padding:12px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:15px}`,
+    js: `const questions=[{q:"HTML ka full form kya hai?",options:["Hyper Trainer Marking Language","Hyper Text Markup Language","High Text Markup Language"],correct:1},{q:"CSS kis kaam aati hai?",options:["Design ke liye","Logic ke liye","Database ke liye"],correct:0},{q:"JavaScript ek ______ language hai.",options:["Styling","Programming","Markup"],correct:1}];let current=0,score=0;function loadQ(){if(current>=questions.length){document.getElementById('qText').textContent="Quiz Khatam!";document.getElementById('options').innerHTML='';document.getElementById('score').textContent="Aapka score: "+score+"/"+questions.length;return;}const q=questions[current];document.getElementById('qText').textContent=q.q;document.getElementById('options').innerHTML=q.options.map((o,i)=>\`<button onclick="check(\${i})">\${o}</button>\`).join('');}function check(i){if(i===questions[current].correct)score++;current++;loadQ();}loadQ();`
+  },
+  counter: {
+    html: `<div class="counter"><h1 id="count">0</h1><div class="btns"><button onclick="change(-1)">-</button><button onclick="change(1)">+</button></div></div>`,
+    css: `body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a2e;color:#fff;font-family:sans-serif}.counter{text-align:center}#count{font-size:64px;margin:0}.btns button{font-size:24px;width:60px;height:60px;border-radius:50%;border:none;margin:0 10px;background:#e94560;color:#fff}`,
+    js: `let count=0;function change(n){count+=n;document.getElementById('count').textContent=count;}`
+  },
+  clock: {
+    html: `<div class="clock"><div id="time"></div><div id="date"></div></div>`,
+    css: `body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#000;color:#0f0;font-family:'Courier New',monospace}.clock{text-align:center}#time{font-size:56px}#date{font-size:16px;opacity:0.7}`,
+    js: `function updateClock(){const now=new Date();document.getElementById('time').textContent=now.toLocaleTimeString();document.getElementById('date').textContent=now.toLocaleDateString();}updateClock();setInterval(updateClock,1000);`
+  },
+  form: {
+    html: `<div class="form-box"><h2>Contact Us</h2><input id="name" placeholder="Naam"><input id="email" placeholder="Email"><textarea id="msg" placeholder="Message" rows="4"></textarea><button onclick="submitForm()">Submit</button><p id="result"></p></div>`,
+    css: `body{margin:0;display:flex;justify-content:center;min-height:100vh;background:#fdf4ff;font-family:sans-serif;padding-top:30px}.form-box{background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);width:300px}.form-box input,.form-box textarea{width:100%;box-sizing:border-box;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #ddd}.form-box button{width:100%;padding:12px;background:#a855f7;color:#fff;border:none;border-radius:8px;font-weight:bold}`,
+    js: `function submitForm(){const n=document.getElementById('name').value;if(!n){document.getElementById('result').textContent='Naam bharein';return;}document.getElementById('result').textContent='Shukriya, '+n+'! Aapka message mil gaya.';}`
+  }
+};
+
+document.getElementById('templateSelect').addEventListener('change', (e) => {
+  const t = TEMPLATES[e.target.value];
+  if(!t) return;
+  htmlCode.value = t.html;
+  cssCode.value = t.css;
+  jsCode.value = t.js;
+  runPreview();
+  e.target.value = "";
+});
+
+// ===== Download Code =====
+document.getElementById('downloadCodeBtn').addEventListener('click', () => {
+  const fullDoc = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>${cssCode.value}</style></head><body>${htmlCode.value}<script>${jsCode.value}<\/script></body></html>`;
+  const blob = new Blob([fullDoc], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'my-app.html';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ===== Error Fix Karo =====
+let lastPreviewError = "";
+window.addEventListener('message', (e) => {
+  if(e.data && e.data.cgError){
+    lastPreviewError = e.data.cgError;
+    document.getElementById('errorFixStatus').textContent = '⚠️ Error mila: ' + lastPreviewError;
+  }
+});
+document.getElementById('fixErrorBtn').addEventListener('click', async () => {
+  const statusEl = document.getElementById('errorFixStatus');
+  const errorMsg = lastPreviewError || 'Koi specific error detect nahi hua, lekin code check karke sudharo aur behtar banao.';
+  statusEl.textContent = '🔧 Fix ho raha hai...';
+  await askAiToBuild(`Mere code mein ye error/problem hai, ise fix karo: ${errorMsg}`);
+  statusEl.textContent = '✅ Fix karne ki koshish ho gayi, Preview check karein.';
+});
+
+// ===== Share Karo =====
+document.getElementById('shareAppBtn').addEventListener('click', async () => {
+  const statusEl = document.getElementById('autoDeployStatus');
+  const fullDoc = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>${cssCode.value}</style></head><body>${htmlCode.value}<script>${jsCode.value}<\/script></body></html>`;
+  try{
+    const res = await fetch('/.netlify/functions/auto-deploy', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ content: fullDoc })
+    });
+    const result = await res.json();
+    if(res.ok && navigator.share){
+      await navigator.share({ title: 'Meri Code Guru App', text: 'Maine ye app Code Guru se banayi!', url: result.url });
+    }else if(res.ok){
+      await navigator.clipboard.writeText(result.url);
+      alert('Link copy ho gaya: ' + result.url);
+    }else{
+      alert('Pehle app ko live karein (Deploy tab), phir share karein.');
+    }
+  }catch(e){
+    alert('Share nahi ho paya: ' + e.message);
+  }
+});
+
+// ===== Learning Streak =====
+function updateStreak(){
+  const todayStr = new Date().toISOString().slice(0,10);
+  const lastActive = localStorage.getItem('cg_last_active');
+  let streak = parseInt(localStorage.getItem('cg_streak') || '0', 10);
+
+  if(lastActive !== todayStr){
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    streak = (lastActive === yesterday) ? streak + 1 : 1;
+    localStorage.setItem('cg_streak', String(streak));
+    localStorage.setItem('cg_last_active', todayStr);
+  }
+  document.getElementById('streakBadge').textContent = `🔥 ${streak} din ka streak`;
+}
+updateStreak();
+
+// ===== Community Gallery (Firebase) =====
+async function loadCommunityApps(){
+  const listEl = document.getElementById('communityList');
+  if(FIREBASE_CONFIG.apiKey === "YOUR_API_KEY"){
+    listEl.innerHTML = '<p class="hint">Site owner ne abhi tak Firebase config nahi bhara hai.</p>';
+    return;
+  }
+  listEl.innerHTML = '<p class="hint">Load ho raha hai...</p>';
+  try{
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js");
+    const { getFirestore, collection, getDocs, query, orderBy, limit } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js");
+    const fbApp = initializeApp(FIREBASE_CONFIG, "communityApp");
+    const db = getFirestore(fbApp);
+    const q = query(collection(db, "community_apps"), orderBy("createdAt", "desc"), limit(20));
+    const snapshot = await getDocs(q);
+    if(snapshot.empty){
+      listEl.innerHTML = '<p class="hint">Abhi tak koi app publish nahi hui. Sabse pehle aap karein!</p>';
+      return;
+    }
+    listEl.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<h3 style="font-size:15px;">${data.name || 'Untitled App'}</h3><button class="load-community-btn">📂 Editor Mein Load Karein</button>`;
+      card.querySelector('.load-community-btn').addEventListener('click', () => {
+        htmlCode.value = data.html || '';
+        cssCode.value = data.css || '';
+        jsCode.value = data.js || '';
+        runPreview();
+        document.querySelector('[data-panel="editorPanel"]').click();
+      });
+      listEl.appendChild(card);
+    });
+  }catch(e){
+    listEl.innerHTML = '<p class="hint">Error: ' + e.message + '</p>';
+  }
+}
+document.getElementById('refreshCommunityBtn').addEventListener('click', loadCommunityApps);
+
+document.getElementById('publishCommunityBtn').addEventListener('click', async () => {
+  if(FIREBASE_CONFIG.apiKey === "YOUR_API_KEY"){
+    alert('Site owner ne abhi tak Firebase config nahi bhara hai.');
+    return;
+  }
+  const appName = prompt('Apni app ka naam dein:');
+  if(!appName) return;
+  try{
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js");
+    const { getFirestore, collection, addDoc } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js");
+    const fbApp = initializeApp(FIREBASE_CONFIG, "communityAppPublish");
+    const db = getFirestore(fbApp);
+    await addDoc(collection(db, "community_apps"), {
+      name: appName, html: htmlCode.value, css: cssCode.value, js: jsCode.value, createdAt: new Date().toISOString()
+    });
+    alert('✅ Publish ho gayi! Community tab mein dekh sakte hain.');
+  }catch(e){
+    alert('Publish nahi ho payi: ' + e.message);
+  }
+});
+
 
 // ===== PWA: Service worker register karo taaki app install ho sake =====
 if ('serviceWorker' in navigator) {
